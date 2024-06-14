@@ -1,20 +1,36 @@
+require('dotenv').config(); // เพื่อใช้ environment variables จากไฟล์ .env
+
 const express = require('express');
 const app = express();
+const session = require('express-session');
 const path = require('path');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const { OAuth2Client } = require('google-auth-library');
-require('dotenv').config(); // เพื่อใช้ environment variables จากไฟล์ .env
-
 const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/project";
-const CLIENT_ID = process.env.GOOGLE_CLIENT_ID; // ใช้ environment variable ที่เก็บ Google Client ID
+const CLIENT_ID = process.env.CLIENT_ID; // ใช้ environment variable ที่เก็บ Google Client ID
 const client = new OAuth2Client(CLIENT_ID);
+const CLIENT_SECRET = process.env.CLIENT_SECRET;
+const passport = require('passport');
+require('./passport'); 
+const GoogleStrategy = require('passport-google-oauth2').Strategy;
 
+mongoose.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log('MongoDB connected...'))
+  .catch(err => console.log(err)); 
+
+  
 // Middleware
 app.use('/public', express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.json());
 app.use(express.json());
+
+app.use(session({
+  resave: false,
+  saveUninitialized: true,
+  secret: process.env.SESSION_SECRET
+}));
 
 app.use((req, res, next) => {
   res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
@@ -22,59 +38,20 @@ app.use((req, res, next) => {
   next();
 });
 
-// Connect to MongoDB
-mongoose.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log('MongoDB connected...'))
-  .catch(err => console.log(err));
+app.set('view engine', 'ejs');
 
-// User Schema
-const userSchema = new mongoose.Schema({
-  googleId: String,
-  name: String,
-  email: String,
-  picture: String,
-});
+app.use(passport.initialize());
+app.use(passport.session());
 
-const User = mongoose.model('User', userSchema);
+const userRoutes = require('./router/user');
+app.use('/',userRoutes);
 
-// Sample route
 app.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, 'views/Login.html'));
 });
 
 app.get('/home', (req, res) => {
   res.sendFile(path.join(__dirname, 'views/pro.html'));
-});
-
-// API route for Google Sign-In
-app.post('/api/google-login', async (req, res) => {
-  const { token } = req.body;
-
-  try {
-    const ticket = await client.verifyIdToken({
-      idToken: token,
-      audience: CLIENT_ID,
-    });
-
-    const payload = ticket.getPayload();
-    const { sub, name, email, picture } = payload;
-
-    let user = await User.findOne({ googleId: sub });
-
-    if (!user) {
-      user = new User({
-        googleId: sub,
-        name,
-        email,
-        picture,
-      });
-      await user.save();
-    }
-
-    res.status(201).json(user);
-  } catch (error) {
-    res.status(400).json({ error: 'Invalid Token' });
-  }
 });
 
 app.listen(PORT, () => {
