@@ -8,17 +8,21 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const { OAuth2Client } = require('google-auth-library');
 const PORT = process.env.PORT || 3000;
-const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/project";
+// const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/project";
+const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://project:project1234@cluster0.h4ufncx.mongodb.net/project?authSource=admin";
 const CLIENT_ID = process.env.CLIENT_ID; // ใช้ environment variable ที่เก็บ Google Client ID
 const client = new OAuth2Client(CLIENT_ID);
 const CLIENT_SECRET = process.env.CLIENT_SECRET;
 const passport = require('passport');
-require('./passport'); 
+require('./passport');
 const GoogleStrategy = require('passport-google-oauth2').Strategy;
 
 mongoose.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log('MongoDB connected...'))
-  .catch(err => console.log(err)); 
+  .then(() => {
+    console.log('MongoDB connected...');
+    console.log(`Connected to database: ${mongoose.connection.name}`);
+  })
+  .catch(err => console.log(err));
 
   
 // Middleware
@@ -53,6 +57,8 @@ app.get('/login', (req, res) => {
 app.get('/home', (req, res) => {
   res.sendFile(path.join(__dirname, 'views/pro.html'));
 });
+
+
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
