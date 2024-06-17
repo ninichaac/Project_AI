@@ -1,11 +1,13 @@
 import pandas as pd
 import re
 from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, IsolationForest
 from sklearn.metrics import accuracy_score, classification_report
-from sklearn.ensemble import IsolationForest
+import json
 
-# รายชื่อ IP ที่รู้ว่ามีความเสี่ยง (สำหรับการฝึกโมเดล)
+# Your known malicious IPs and AI training code here...
+
+# Example AI training code
 known_malicious_ips = [
     "1.3.3.7", "5.6.7.8", "8.8.8.8", "12.34.56.78", "23.45.67.89",
     "45.67.89.101", "67.89.101.123", "89.101.123.145", "123.145.167.189",
@@ -18,11 +20,10 @@ known_malicious_ips = [
     "240.0.0.3", "240.0.0.4"
 ]
 
-# อ่านไฟล์ CSV
+# Read the CSV file
 file_path = 'report1710215971890.csv.gz'
 df = pd.read_csv(file_path)
 
-# ขั้นตอนที่ 1: การเตรียมข้อมูล
 def extract_features(row):
     log = row['Raw Event Log']
     ip_pattern = re.compile(r'(\d+\.\d+\.\d+\.\d+)')
@@ -34,11 +35,9 @@ def extract_features(row):
 
 df[['Src_IP', 'Dest_IP', 'IsFailed']] = df.apply(extract_features, axis=1, result_type="expand")
 
-# แปลงข้อมูล IPs ให้อยู่ในแต่ละแถวเพื่อการติดฉลาก
 flat_df = df.explode('Src_IP').dropna(subset=['Src_IP'])
 flat_df['Label'] = flat_df['IsFailed']
 
-# ขั้นตอนที่ 2: การสร้างฟีเจอร์
 def ip_to_features(ip):
     if ip is not None:
         return [int(part) for part in ip.split('.')]
@@ -51,60 +50,57 @@ flat_df[['Src_Feature1', 'Src_Feature2', 'Src_Feature3', 'Src_Feature4']] = pd.D
 flat_df['Dest_IP_Features'] = flat_df['Dest_IP'].apply(ip_to_features)
 flat_df[['Dest_Feature1', 'Dest_Feature2', 'Dest_Feature3', 'Dest_Feature4']] = pd.DataFrame(flat_df['Dest_IP_Features'].tolist(), index=flat_df.index)
 
-# ติดฉลาก IP ที่เป็นที่รู้กันว่ามีความเสี่ยง
 flat_df['Label'] = flat_df.apply(lambda row: 1 if row['Src_IP'] in known_malicious_ips else row['Label'], axis=1)
 
-# เลือกฟีเจอร์และฉลาก
 features = flat_df[['Src_Feature1', 'Src_Feature2', 'Src_Feature3', 'Src_Feature4', 'Dest_Feature1', 'Dest_Feature2', 'Dest_Feature3', 'Dest_Feature4']]
 labels = flat_df['Label']
 
-# แบ่งข้อมูลเป็นชุดฝึกและชุดทดสอบ
 X_train, X_test, y_train, y_test = train_test_split(features, labels, test_size=0.2, random_state=42)
 
-# ขั้นตอนที่ 3: การฝึกโมเดล Random Forest
 clf = RandomForestClassifier(n_estimators=100, random_state=42)
 clf.fit(X_train, y_train)
 
-# ทำนายข้อมูลทดสอบ
 y_pred = clf.predict(X_test)
-
-# ประเมินผลโมเดล
 accuracy = accuracy_score(y_test, y_pred)
 report = classification_report(y_test, y_pred)
 
 print(f"Random Forest Model Accuracy: {accuracy}")
 print(f"Random Forest Classification Report:\n{report}")
 
-# ขั้นตอนที่ 4: การฝึกโมเดล Isolation Forest
-iso_forest = IsolationForest(contamination=0.1, random_state=42)
+iso_forest = IsolationForest(contamination=0.05, random_state=42)
 iso_forest.fit(features)
 
-# ทำนายข้อมูลทั้งหมด
 iso_labels = iso_forest.predict(features)
-# เปลี่ยน -1 (anomaly) ให้เป็น 1 และ 1 (normal) ให้เป็น 0
 iso_labels = [1 if label == -1 else 0 for label in iso_labels]
 
-# แปลง iso_labels เป็น pandas Series
 iso_labels_series = pd.Series(iso_labels, index=features.index)
-
-# สร้าง DataFrame สำหรับ IP ที่เป็นอันตรายที่ตรวจพบจาก Isolation Forest
 iso_malicious_ips = flat_df.loc[iso_labels_series == 1, 'Src_IP'].unique()
 iso_malicious_table = pd.DataFrame({
     'IP Address': iso_malicious_ips,
     'Status': 'Malicious (Isolation Forest)'
 })
 
-# แสดงตาราง IP ที่เป็นอันตรายจาก Isolation Forest
+print("Malicious IPs detected by Isolation Forest:")
 print(iso_malicious_table)
 
-# สกัดและระบุ IP ที่เป็นอันตรายจากทั้งสองโมเดล
-combined_malicious_ips = set(iso_malicious_ips).union(set(iso_malicious_ips))
+combined_malicious_ips = set(iso_malicious_ips).union(set(flat_df.loc[iso_labels_series == 1, 'Src_IP'].unique()))
 
-# สร้าง DataFrame สำหรับ IP ที่เป็นอันตรายจากทั้งสองโมเดล
 combined_malicious_table = pd.DataFrame({
     'IP Address': list(combined_malicious_ips),
     'Status': 'Malicious'
 })
 
-# แสดงตาราง IP ที่เป็นอันตรายจากทั้งสองโมเดล
+print("\nCombined Malicious IPs detected:")
 print(combined_malicious_table)
+
+ai_analysis_results = {
+    'Random Forest Accuracy': accuracy,
+    'Random Forest Report': report,
+    'Isolation Forest Malicious IPs': iso_malicious_table.to_dict(orient='records'),
+    'Combined Malicious IPs': combined_malicious_table.to_dict(orient='records')
+}
+
+with open('ai_analysis_results.json', 'w') as f:
+    json.dump(ai_analysis_results, f, indent=4)
+
+print("AI analysis results saved to ai_analysis_results.json")

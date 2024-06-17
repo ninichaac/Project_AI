@@ -111,27 +111,17 @@ body {
 
 }
 
-
-.container_home {
-  position: absolute;
-  top: 62%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 600px;
-  height: 400px;
-  background-color: #9BA3EB;
-  border-radius: 40px;
-}
-
 .conhome {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   width: 500px;
-  height: 300px;
+  height: 370px;
   background-color: #fbfbfb;
   border-radius: 40px;
+  margin-top: 65px;
+  box-shadow:0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
 
 .dropimg {

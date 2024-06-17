@@ -23,10 +23,13 @@
       <a class="active" href="#home" onclick="changeActiveLink(this)">Home</a>
       <a href="#analysis" onclick="changeActiveLink(this)">Analysis</a>
       <a href="#history" onclick="changeActiveLink(this)">History</a>
-      <a href="#" onclick="logout()"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-box-arrow-right" viewBox="0 0 16 16">
-        <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0z"/>
-        <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z"/>
-      </svg></a>
+      <a href="#" onclick="logout()"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+          class="bi bi-box-arrow-right" viewBox="0 0 16 16">
+          <path fill-rule="evenodd"
+            d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0z" />
+          <path fill-rule="evenodd"
+            d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z" />
+        </svg></a>
     </div>
   </div>
 
@@ -36,44 +39,159 @@
       text-align: center;
     }
 
-    .dropimg img {
+    .btn {
+      background-color: #5479e9;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
       cursor: pointer;
-      /* Change cursor to pointer when hovering over the image */
+      font-size: 16px;
+      margin-top: 400px;
+    }
+
+    .wrapper {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    header {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+    #input-form {
+      margin-top: 20px;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
     input[type="file"] {
+      margin-bottom: 20px;
+    }
+
+    button {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    .loading {
       display: none;
-      /* Hide the file input */
+      margin-top: 20px;
+    }
+
+    .confirmed {
+      background-color: #A9A9A9 !important;
+      /* Grey */
+      cursor: default;
     }
   </style>
 
   <div id="home" class="section_home">
-    <div>
-      <h2>AI aids in the analysis of dubious or dangerous IP.</h2>
-      <p>This tool is currently under development.</p>
-      <p>Errors may occur. We apologize for this.</p>
-    </div>
     <div class="container_home">
-      <div class="conhome">
-        <div class="dropimg">
-          <img src="/public/img/drop.png" style="height: 170px; width: 170px;" id="dropImage">
-          <input type="file" id="fileInput">
-        </div>
-        <h5>Drop file here</h5>
+      <div>
+        <h2>AI aids in the analysis of dubious or dangerous IP.</h2>
+        <p>This tool is currently under development.</p>
+        <p>Errors may occur. We apologize for this.</p>
       </div>
+      <div class="conhome">
+        <div id="input-form">
+          <img src="/public/img/drop.png" style="height: 170px; width: 170px;" id="dropImage">
+          <header id="file-name">Drop file here</header>
+          <form id="uploadForm" enctype="multipart/form-data">
+            <input type="file" name="file" id="file" accept=".csv" required />
+            <button type="submit" id="submit-form">Confirm</button>
+          </form>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="startTraining()">Click to training</button>
     </div>
   </div>
-
+  <!-- button training ai -->
   <script>
-    document.getElementById('dropImage').addEventListener('click', function () {
-      document.getElementById('fileInput').click();
+    function startTraining() {
+      fetch('/train')
+        .then(response => response.text())
+        .then(data => {
+          alert(data);
+        });
+    }
+  </script>
+  <!-- button training ai -->
+  <script>
+    ////// upload file ////
+    let filename = '';
+
+    document.getElementById('file').addEventListener('change', function (event) {
+      const file = event.target.files[0];
+      filename = file.name;
+      const fileExtension = filename.split('.').pop().toLowerCase();
+      if (fileExtension === 'csv') {
+        document.getElementById('dropImage').src = '/public/img/csv.png';
+        document.getElementById('file-name').innerText = filename;
+
+        const submitButton = document.getElementById('submit-form');
+        submitButton.innerText = 'Confirm';
+        submitButton.classList.remove('confirmed');
+        submitButton.disabled = false;
+      } else {
+        alert('Please select a CSV file.');
+        event.target.value = ''; // Clear the input field
+      }
     });
 
-    document.getElementById('fileInput').addEventListener('change', function (event) {
-      const file = event.target.files[0];
-      if (file) {
-        console.log('Selected file:', file.name);
-        // You can handle the file upload here
+    document.getElementById('uploadForm').addEventListener('submit', async function (event) {
+      event.preventDefault();
+
+      const formData = new FormData();
+      const fileField = document.querySelector('input[type="file"]');
+      formData.append('file', fileField.files[0]);
+
+      const dropImage = document.getElementById('dropImage');
+      const fileNameHeader = document.getElementById('file-name');
+      const submitButton = document.getElementById('submit-form');
+
+      // Show loading spinner and message
+      dropImage.src = '/public/img/loading-spinner.webp';
+      fileNameHeader.innerText = 'Loading...';
+
+      try {
+        const response = await fetch('/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (response.ok) {
+          submitButton.innerText = 'Confirmed';
+          submitButton.classList.add('confirmed');
+          submitButton.disabled = true;
+        } else {
+          alert('File upload failed');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Error uploading file');
+      } finally {
+        // Reset image and header text after upload
+        dropImage.src = '/public/img/csv.png';
+        fileNameHeader.innerText = filename;
       }
     });
   </script>
@@ -133,46 +251,40 @@
     </div>
   </div>
   <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      const tableBody = document.getElementById('table-body');
-      const tableContainer = document.querySelector('.table-container');
+    function startTraining() {
+      fetch('/train')
+        .then(response => response.text())
+        .then(data => {
+          alert(data);
+          loadResults();
+        })
+        .catch(error => console.error('Error:', error));
+    }
 
-      let currentPage = 1;
-      const rowsPerPage = 20;
-      const totalRows = 2000; // Example total number of rows
+    function loadResults() {
+      fetch('/results')
+        .then(response => response.json())
+        .then(data => {
+          const tableBody = document.getElementById('table-body');
+          tableBody.innerHTML = ''; // Clear previous data
+          data.forEach((item, index) => {
+            const row = document.createElement('tr');
+            const noCell = document.createElement('td');
+            const ipCell = document.createElement('td');
+            const statusCell = document.createElement('td');
 
-      function loadMoreRows(page) {
-        // Simulate loading more rows from a data source
-        for (let i = 0; i < rowsPerPage; i++) {
-          const row = document.createElement('tr');
-          const noCell = document.createElement('td');
-          const ipCell = document.createElement('td');
-          const statusCell = document.createElement('td');
+            noCell.textContent = index + 1;
+            ipCell.textContent = item['IP Address'];
+            statusCell.textContent = item['Status'];
 
-          noCell.textContent = (page - 1) * rowsPerPage + i + 1;
-          ipCell.textContent = `192.168.0.${(page - 1) * rowsPerPage + i + 1}`;
-          statusCell.textContent = Math.random() > 0.5 ? 'Active' : 'Inactive';
-
-          row.appendChild(noCell);
-          row.appendChild(ipCell);
-          row.appendChild(statusCell);
-          tableBody.appendChild(row);
-        }
-      }
-
-      // Initial load
-      loadMoreRows(currentPage);
-
-      // Handle scroll event
-      tableContainer.addEventListener('scroll', function () {
-        if (tableContainer.scrollTop + tableContainer.clientHeight >= tableBody.clientHeight) {
-          if (currentPage * rowsPerPage < totalRows) {
-            currentPage++;
-            loadMoreRows(currentPage);
-          }
-        }
-      });
-    });
+            row.appendChild(noCell);
+            row.appendChild(ipCell);
+            row.appendChild(statusCell);
+            tableBody.appendChild(row);
+          });
+        })
+        .catch(error => console.error('Error:', error));
+    }
   </script>
 
   <!-- Analysis -->
@@ -283,10 +395,12 @@
     });
 
     function logout() {
-    // Perform any necessary logout actions (e.g., clearing session, cookies, etc.)
-    // Redirect the user to the login page
-    window.location.href = '/login'; // Change '/login' to the actual URL of your login page
-  }
+      // Perform any necessary logout actions (e.g., clearing session, cookies, etc.)
+      // Redirect the user to the login page
+      window.location.href = '/login'; // Change '/login' to the actual URL of your login page
+    }
+
+
   </script>
 
 
