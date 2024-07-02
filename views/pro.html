@@ -251,40 +251,40 @@
     </div>
   </div>
   <script>
-    function startTraining() {
-      fetch('/train')
-        .then(response => response.text())
-        .then(data => {
-          alert(data);
-          loadResults();
-        })
-        .catch(error => console.error('Error:', error));
-    }
+    // function startTraining() {
+    //   fetch('/train')
+    //     .then(response => response.text())
+    //     .then(data => {
+    //       alert(data);
+    //       loadResults();
+    //     })
+    //     .catch(error => console.error('Error:', error));
+    // }
 
-    function loadResults() {
-      fetch('/results')
-        .then(response => response.json())
-        .then(data => {
-          const tableBody = document.getElementById('table-body');
-          tableBody.innerHTML = ''; // Clear previous data
-          data.forEach((item, index) => {
-            const row = document.createElement('tr');
-            const noCell = document.createElement('td');
-            const ipCell = document.createElement('td');
-            const statusCell = document.createElement('td');
+    // function loadResults() {
+    //   fetch('/results')
+    //     .then(response => response.json())
+    //     .then(data => {
+    //       const tableBody = document.getElementById('table-body');
+    //       tableBody.innerHTML = ''; // Clear previous data
+    //       data.forEach((item, index) => {
+    //         const row = document.createElement('tr');
+    //         const noCell = document.createElement('td');
+    //         const ipCell = document.createElement('td');
+    //         const statusCell = document.createElement('td');
 
-            noCell.textContent = index + 1;
-            ipCell.textContent = item['IP Address'];
-            statusCell.textContent = item['Status'];
+    //         noCell.textContent = index + 1;
+    //         ipCell.textContent = item['IP Address'];
+    //         statusCell.textContent = item['Status'];
 
-            row.appendChild(noCell);
-            row.appendChild(ipCell);
-            row.appendChild(statusCell);
-            tableBody.appendChild(row);
-          });
-        })
-        .catch(error => console.error('Error:', error));
-    }
+    //         row.appendChild(noCell);
+    //         row.appendChild(ipCell);
+    //         row.appendChild(statusCell);
+    //         tableBody.appendChild(row);
+    //       });
+    //     })
+    //     .catch(error => console.error('Error:', error));
+    // }
   </script>
 
   <!-- Analysis -->
