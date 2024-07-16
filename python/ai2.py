@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-from pymongo import MongoClient
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, VotingClassifier, IsolationForest
 from sklearn.metrics import classification_report, accuracy_score, roc_auc_score, roc_curve, precision_recall_curve, confusion_matrix
 from sklearn.model_selection import train_test_split, RandomizedSearchCV
@@ -9,32 +8,14 @@ from sklearn.pipeline import Pipeline
 from xgboost import XGBClassifier
 import matplotlib.pyplot as plt
 import logging
-from imblearn.over_sampling import SMOTE
-import os
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-# Connect to MongoDB and fetch data from the 'update' collection
-logging.info("Connecting to MongoDB...")
-client = MongoClient('mongodb+srv://project:project1234@cluster0.h4ufncx.mongodb.net/project?authSource=admin')
-db = client['project']
-output_file = db['update']
-file_path = 'python/Dangerous_IP.csv'
-
-# ดึงข้อมูลจาก MongoDB
-output_file_data = list(output_file.find({}, {'_id': 0}))  # Exclude '_id' field
-
-# แปลงข้อมูลเป็น DataFrame
-output_file = pd.DataFrame(output_file_data)
-
-# ตรวจสอบว่าไฟล์มีอยู่หรือไม่
-if not os.path.exists(file_path):
-    logging.error(f"ไฟล์ {file_path} ไม่มีอยู่ โปรดตรวจสอบเส้นทางของไฟล์")
-else:
-    # อ่านไฟล์ Dangerous_IP.csv
-    dangerous_ip_file = pd.read_csv(file_path)
-
+# Load CSV files and handle dtype
+logging.info("Loading CSV files...")
+output_file = pd.read_csv('output_file.csv', dtype={'Source Port': str, 'Bytes Sent': str, 'Bytes Received': str})
+dangerous_ip_file = pd.read_csv('Dangerous_IP.csv')
 
 # Convert Timestamp to datetime object
 output_file['Timestamp'] = pd.to_datetime(output_file['Timestamp'], errors='coerce')

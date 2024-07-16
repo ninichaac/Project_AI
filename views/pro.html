@@ -207,7 +207,7 @@
     }
 
     .table-container {
-      height: 600px;
+      height: 550px;
       /* Fixed height for the table */
       overflow-y: auto;
       /* Enable vertical scrolling */
@@ -251,40 +251,47 @@
     </div>
   </div>
   <script>
-    // function startTraining() {
-    //   fetch('/train')
-    //     .then(response => response.text())
-    //     .then(data => {
-    //       alert(data);
-    //       loadResults();
-    //     })
-    //     .catch(error => console.error('Error:', error));
-    // }
+    
+    // document.addEventListener('DOMContentLoaded', function () {
+    //   const tableBody = document.getElementById('table-body');
+    //   const tableContainer = document.querySelector('.table-container');
 
-    // function loadResults() {
-    //   fetch('/results')
-    //     .then(response => response.json())
-    //     .then(data => {
-    //       const tableBody = document.getElementById('table-body');
-    //       tableBody.innerHTML = ''; // Clear previous data
-    //       data.forEach((item, index) => {
-    //         const row = document.createElement('tr');
-    //         const noCell = document.createElement('td');
-    //         const ipCell = document.createElement('td');
-    //         const statusCell = document.createElement('td');
+    //   let currentPage = 1;
+    //   const rowsPerPage = 20;
+    //   const totalRows = 2000; // Example total number of rows
 
-    //         noCell.textContent = index + 1;
-    //         ipCell.textContent = item['IP Address'];
-    //         statusCell.textContent = item['Status'];
+    //   function loadMoreRows(page) {
+    //     // Simulate loading more rows from a data source
+    //     for (let i = 0; i < rowsPerPage; i++) {
+    //       const row = document.createElement('tr');
+    //       const noCell = document.createElement('td');
+    //       const ipCell = document.createElement('td');
+    //       const statusCell = document.createElement('td');
 
-    //         row.appendChild(noCell);
-    //         row.appendChild(ipCell);
-    //         row.appendChild(statusCell);
-    //         tableBody.appendChild(row);
-    //       });
-    //     })
-    //     .catch(error => console.error('Error:', error));
-    // }
+    //       noCell.textContent = (page - 1) * rowsPerPage + i + 1;
+    //       ipCell.textContent = `192.168.0.${(page - 1) * rowsPerPage + i + 1}`;
+    //       statusCell.textContent = Math.random() > 0.5 ? 'Active' : 'Inactive';
+
+    //       row.appendChild(noCell);
+    //       row.appendChild(ipCell);
+    //       row.appendChild(statusCell);
+    //       tableBody.appendChild(row);
+    //     }
+    //   }
+
+    //   // Initial load
+    //   loadMoreRows(currentPage);
+
+    //   // Handle scroll event
+    //   tableContainer.addEventListener('scroll', function () {
+    //     if (tableContainer.scrollTop + tableContainer.clientHeight >= tableBody.clientHeight) {
+    //       if (currentPage * rowsPerPage < totalRows) {
+    //         currentPage++;
+    //         loadMoreRows(currentPage);
+    //       }
+    //     }
+    //   });
+    // });
   </script>
 
   <!-- Analysis -->
