@@ -1,201 +1,69 @@
 import pandas as pd
-import numpy as np
 from pymongo import MongoClient
-from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, VotingClassifier, IsolationForest
-from sklearn.metrics import classification_report, accuracy_score, roc_auc_score, roc_curve, precision_recall_curve, confusion_matrix
-from sklearn.model_selection import train_test_split, RandomizedSearchCV
-from sklearn.preprocessing import StandardScaler
-from sklearn.pipeline import Pipeline
-from xgboost import XGBClassifier
-import matplotlib.pyplot as plt
-import logging
-from imblearn.over_sampling import SMOTE
-import os
+from datetime import datetime
+import motor.motor_asyncio
+import asyncio
 
-# Setup logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
-# Connect to MongoDB and fetch data from the 'update' collection
-logging.info("Connecting to MongoDB...")
+# เชื่อมต่อกับ MongoDB
 client = MongoClient('mongodb+srv://project:project1234@cluster0.h4ufncx.mongodb.net/project?authSource=admin')
 db = client['project']
-output_file = db['update']
-file_path = 'python/Dangerous_IP.csv'
+logfiles_collection = db['logfiles']
+update_collection = db['update']
 
-# ดึงข้อมูลจาก MongoDB
-output_file_data = list(output_file.find({}, {'_id': 0}))  # Exclude '_id' field
+# ฟังก์ชันสำหรับประมวลผลข้อมูล
+async def process_latest_file(latest_file_document):
+    raw_event_log = latest_file_document['Raw Event Log']
 
-# แปลงข้อมูลเป็น DataFrame
-output_file = pd.DataFrame(output_file_data)
+    # แบ่งสตริง raw_event_log เป็นบรรทัด
+    raw_event_logs = raw_event_log.split('\n')
+    processed_data = []
 
-# ตรวจสอบว่าไฟล์มีอยู่หรือไม่
-if not os.path.exists(file_path):
-    logging.error(f"ไฟล์ {file_path} ไม่มีอยู่ โปรดตรวจสอบเส้นทางของไฟล์")
-else:
-    # อ่านไฟล์ Dangerous_IP.csv
-    dangerous_ip_file = pd.read_csv(file_path)
+    for log in raw_event_logs:
+        parts = log.split(',')
+        if len(parts) > 113:  # ตรวจสอบให้มีข้อมูลเพียงพอ
+            processed_data.append({
+                'Country': parts[42].strip(),
+                'Timestamp': parts[1].strip(),
+                'Action': parts[30].strip(),
+                'Source IP': parts[7].strip(),
+                'Source Port': parts[24].strip(),
+                'Destination IP': parts[8].strip(),
+                'Destination Port': parts[25].strip(),
+                'Protocol': parts[29].strip(),
+                'Bytes Sent': parts[31].strip(),
+                'Bytes Received': parts[32].strip(),
+                'Threat Information': ','.join(parts[109:114]).strip()  # รวมข้อมูล Threat Information
+            })
 
+    # อัปโหลดข้อมูลที่ประมวลผลไปยัง MongoDB
+    if processed_data:
+        try:
+            # ทำการแทรกข้อมูลเป็นกลุ่มเพื่อเพิ่มประสิทธิภาพ
+            batch_size = 1000
+            for i in range(0, len(processed_data), batch_size):
+                batch = processed_data[i:i+batch_size]
+                result = await update_collection.insert_many(batch)
+                if len(result.inserted_ids) != len(batch):
+                    print(f"Warning: Only {len(result.inserted_ids)} out of {len(batch)} records were inserted.")
+        except Exception as e:
+            print(f"เกิดข้อผิดพลาดในการอัปโหลดข้อมูล: {e}")
 
-# Convert Timestamp to datetime object
-output_file['Timestamp'] = pd.to_datetime(output_file['Timestamp'], errors='coerce')
+    print("การประมวลผลข้อมูลเสร็จสมบูรณ์ อัปโหลดข้อมูลไปยัง MongoDB เรียบร้อยแล้ว")
 
-# Convert problematic columns to numeric
-output_file['Bytes Sent'] = pd.to_numeric(output_file['Bytes Sent'], errors='coerce')
-output_file['Bytes Received'] = pd.to_numeric(output_file['Bytes Received'], errors='coerce')
-output_file['Source Port'] = pd.to_numeric(output_file['Source Port'], errors='coerce').fillna(0).astype(int)
-output_file['Destination Port'] = pd.to_numeric(output_file['Destination Port'], errors='coerce').fillna(0).astype(int)
+# ฟังก์ชันสำหรับตรวจสอบการเปลี่ยนแปลงใน collection
+async def watch_logfiles_collection():
+    with logfiles_collection.watch() as stream:
+        for change in stream:
+            if change['operationType'] == 'insert':
+                print("ตรวจพบการอัปโหลดไฟล์ใหม่ กำลังประมวลผล...")
+                try:
+                    latest_file_document = change['fullDocument']
+                    await process_latest_file(latest_file_document)
+                except Exception as e:
+                    print(f"เกิดข้อผิดพลาดขณะประมวลผลไฟล์ใหม่: {e}")
 
-# Get 'Source IP' column from Dangerous_IP.csv
-dangerous_ips = set(dangerous_ip_file['Source IP'])
-
-# Create label column: 1 for dangerous IPs, 0 for normal IPs
-output_file['label'] = output_file['Source IP'].apply(lambda ip: 1 if ip in dangerous_ips else 0)
-
-# Drop unnecessary columns
-X = output_file.drop(columns=['label', 'Source IP', 'Destination IP', 'Timestamp'])
-y = output_file['label']
-
-# Encode categorical columns
-X = pd.get_dummies(X, columns=['Country', 'Action', 'Protocol', 'Threat Information'])
-
-# Fill missing values with 0
-X = X.fillna(0)
-
-# Split data into training and testing sets
-logging.info("Splitting data into training and testing sets...")
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-# Define models
-rf_model = RandomForestClassifier(random_state=42)
-gbc_model = GradientBoostingClassifier(random_state=42)
-xgb_model = XGBClassifier(random_state=42, use_label_encoder=False, eval_metric='logloss')
-
-# Create Voting Classifier
-voting_clf = VotingClassifier(estimators=[
-    ('rf', rf_model),
-    ('gbc', gbc_model),
-    ('xgb', xgb_model)
-], voting='soft')  # Use 'soft' voting for probability predictions
-
-# Define the pipeline
-pipeline = Pipeline([
-    ('scaler', StandardScaler()),  # Add scaler if needed
-    ('voting_clf', voting_clf)
-])
-
-# Define hyperparameters for RandomizedSearch
-param_distributions = {
-    'voting_clf__rf__n_estimators': [50, 100],
-    'voting_clf__gbc__n_estimators': [50, 100],
-    'voting_clf__xgb__n_estimators': [50, 100]
-}
-
-# Perform RandomizedSearchCV
-logging.info("Performing RandomizedSearchCV...")
-random_search = RandomizedSearchCV(pipeline, param_distributions, n_iter=10, cv=3, scoring='roc_auc', random_state=42)
-random_search.fit(X_train, y_train)
-
-# Best parameters and best score
-logging.info(f"Best parameters: {random_search.best_params_}")
-logging.info(f"Best ROC-AUC score: {random_search.best_score_}")
-
-# Use the best model for predictions
-best_model = random_search.best_estimator_
-y_pred_proba = best_model.predict_proba(X_test)[:, 1]
-
-# Calculate ROC-AUC score
-roc_auc = roc_auc_score(y_test, y_pred_proba)
-logging.info(f"ROC-AUC Score: {roc_auc}")
-
-# Calculate ROC curve
-fpr, tpr, thresholds = roc_curve(y_test, y_pred_proba)
-
-# Plot ROC curve
-plt.figure()
-plt.plot(fpr, tpr, label=f'ROC curve (area = {roc_auc:.2f})')
-plt.plot([0, 1], [0, 1], 'k--')
-plt.xlim([0.0, 1.0])
-plt.ylim([0.0, 1.05])
-plt.xlabel('False Positive Rate')
-plt.ylabel('True Positive Rate')
-plt.title('Receiver Operating Characteristic')
-plt.legend(loc="lower right")
-plt.show()
-
-# Calculate Precision-Recall curve
-precision, recall, thresholds_pr = precision_recall_curve(y_test, y_pred_proba)
-
-# Plot Precision-Recall curve
-plt.figure()
-plt.plot(recall, precision, label='Precision-Recall curve')
-plt.xlabel('Recall')
-plt.ylabel('Precision')
-plt.title('Precision-Recall curve')
-plt.legend(loc="lower left")
-plt.show()
-
-# Adjust threshold to balance precision and recall
-optimal_threshold = thresholds[np.argmax(tpr - fpr)]
-logging.info(f"Optimal Threshold: {optimal_threshold}")
-
-# Predict with custom threshold
-y_pred_custom_threshold = (y_pred_proba >= optimal_threshold).astype(int)
-
-# Evaluate prediction results
-accuracy = accuracy_score(y_test, y_pred_custom_threshold)
-logging.info(f"Accuracy with custom threshold: {accuracy}")
-logging.info("Classification report:")
-logging.info(f"\n{classification_report(y_test, y_pred_custom_threshold)}")
-
-# Confusion Matrix
-conf_matrix = confusion_matrix(y_test, y_pred_custom_threshold)
-logging.info(f"Confusion Matrix:\n{conf_matrix}")
-
-# Use Isolation Forest to detect anomalies
-isolation_forest = IsolationForest(n_estimators=100, contamination=0.01, random_state=42)
-isolation_forest.fit(X_train)
-
-# Predict with Isolation Forest
-output_file['anomaly_score'] = isolation_forest.decision_function(X)
-output_file['is_anomalous_isolation_forest'] = isolation_forest.predict(X)
-
-# Convert Isolation Forest predictions to 0 for normal, 1 for anomaly
-output_file['is_anomalous_isolation_forest'] = output_file['is_anomalous_isolation_forest'].apply(lambda x: 1 if x == -1 else 0)
-
-# Merge results from both models
-output_file_filtered = pd.concat([output_file, pd.Series(y_pred_custom_threshold, name='y_pred_custom_threshold')], axis=1)
-
-# Drop any rows with missing values in critical columns
-output_file_filtered.dropna(subset=['Country', 'Bytes Sent', 'Bytes Received', 'y_pred_custom_threshold'], inplace=True)
-
-# Filter rows with dangerous IPs based on multiple conditions
-filtered_output_dangerous_ips = output_file_filtered[
-    (output_file_filtered['label'] == 1) |  # IP is marked as dangerous
-    (output_file_filtered['anomaly_score'] < 0) |  # Anomaly score indicates abnormal behavior
-    (output_file_filtered['is_anomalous_isolation_forest'] == 1) |  # Detected as anomalous by Isolation Forest
-    (output_file_filtered['y_pred_custom_threshold'] == 1)  # Predicted as dangerous by custom threshold
-]
-
-# Define a function to determine the status
-def determine_status(row):
-    count_dangerous = row['label'] + (row['anomaly_score'] < 0) + row['is_anomalous_isolation_forest'] + row['y_pred_custom_threshold']
-    if count_dangerous == 1:
-        return 'Risk'
-    elif count_dangerous == 2:
-        return 'High Risk'
-    elif count_dangerous == 3:
-        return 'Dangerous'
-    elif count_dangerous == 4:
-        return 'Very dangerous'
-    else:
-        return 'Unknown'
-
-# Apply the function to each row to create the 'status' column
-filtered_output_dangerous_ips['status'] = filtered_output_dangerous_ips.apply(determine_status, axis=1)
-
-# Save the filtered data to a new CSV file
-filtered_output_dangerous_ips.to_csv('filtered_output_dangerous_ai_with_status.csv', index=False)
-
-# Display the first few rows of the filtered data
-logging.info("Filtered dangerous IPs with status:")
-logging.info(f"\n{filtered_output_dangerous_ips.head()}")
+# เริ่มตรวจสอบการเปลี่ยนแปลงใน collection
+if __name__ == "__main__":
+    print("เริ่มตรวจสอบการเปลี่ยนแปลงใน collection logfiles...")
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(watch_logfiles_collection())

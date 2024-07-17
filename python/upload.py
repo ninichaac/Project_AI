@@ -1,6 +1,8 @@
 import pandas as pd
 from pymongo import MongoClient
 from datetime import datetime
+import motor.motor_asyncio
+import asyncio
 
 # เชื่อมต่อกับ MongoDB
 client = MongoClient('mongodb+srv://project:project1234@cluster0.h4ufncx.mongodb.net/project?authSource=admin')
@@ -9,7 +11,7 @@ logfiles_collection = db['logfiles']
 update_collection = db['update']
 
 # Function for processing data
-def process_latest_file(latest_file_document):
+async def process_latest_file(latest_file_document):
     # Extract data from the "Raw Event Log" field
     raw_event_log = latest_file_document['Raw Event Log']
 
@@ -38,7 +40,9 @@ def process_latest_file(latest_file_document):
     if processed_data:
         try:
             # Perform batch insert for efficiency
-            update_collection.insert_many(processed_data)
+            batch_size = 1000
+            for i in range(0, len(processed_data), batch_size):
+                await update_collection.insert_many(processed_data[i:i+batch_size])
         except Exception as e:
             print(f"Error uploading data: {e}")
 
@@ -59,4 +63,6 @@ def watch_logfiles_collection():
 # เริ่มตรวจสอบการเปลี่ยนแปลงใน collection
 if __name__ == "__main__":
     print("Start checking for changes to collection logfiles...")
-    watch_logfiles_collection()
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(watch_logfiles_collection())
+    # watch_logfiles_collection()

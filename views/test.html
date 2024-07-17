@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="path/to/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/public/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/public/css/pro.css">
+  <!-- Goolge -->
+  <meta name="google-signin-client_id"
+    content="427624908596-uqqfs738r21anbinb64087lgeik1medo.apps.googleusercontent.com">
+  <!-- <script src="https://apis.google.com/js/platform.js" async defer></script> -->
+  <meta name="google-signin-scope" content="profile email">
+  <script src="https://apis.google.com/js/platform.js" async defer onload="init()"></script>
+
+  <!-- Goolge -->
+
+
+  <title>Login</title>
+  <style>
+    .topnav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0px 20px 5px 20px;
+    }
+
+    .brand-container {
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid rgba(0, 0, 0, 0.427);
+      padding-right: 25px;
+      flex-shrink: 0;
+    }
+
+    .img_mfu {
+      margin-left: 0;
+      padding-left: 0;
+    }
+
+    .img_mfu img {
+      height: 60px;
+      width: 50px;
+    }
+
+    @media (max-width: 600px) {
+      .topnav {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .brand-container,
+      .img_mfu {
+        margin-bottom: 10px;
+        border-right: none;
+        padding-right: 0;
+      }
+
+      .img_mfu {
+        padding-left: 0;
+      }
+    }
+
+    .google-button {
+      display: inline-flex;
+      align-items: center;
+      padding: 15px 65px;
+      margin-top: 10px;
+      font-size: 16px;
+      border: none;
+      cursor: pointer;
+      background-image: linear-gradient(to right, #fd4203 0%, #f68223 100%);
+      color: white;
+      border-radius: 4px;
+      text-decoration: none;
+    }
+
+    .google-button a {
+      color: white;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+    }
+
+    .google-button svg {
+      margin-right: 8px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="topnav">
+    <div class="brand-container">
+      <div class="brand">The case study of security information management</div>
+      <div class="brand">at Mae Fah Luang University</div>
+    </div>
+    <div class="img_mfu">
+      <img src="/public/img/mfu.png" alt="MFU Logo">
+    </div>
+  </div>
+  <div class="container">
+    <form action="#">
+      <div class="title">Login</div>
+      <div class="input-box underline">
+        <input type="text" placeholder="Enter Your Email"  required>
+        <div class="underline"></div>
+      </div>
+      <div class="input-box">
+        <input type="password" placeholder="Enter Your Password" required>
+        <div class="underline"></div>
+      </div>
+      <div class="input-box button">
+        <input type="submit" onclick="redirectToPro()" value="Continue">
+      </div>
+      <!-- <div class="my-2">Not have account ? <a href="">Signin</a></div> -->
+    </form>
+    <div class="option">or Connect With Social Media</div>
+    <button class="google-button"><a href='/auth'><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+          fill="currentColor" class="bi bi-google text-center" viewBox="0 0 16 16">
+          <path
+            d="M15.545 6.558a9.4 9.4 0 0 1 .139 1.626c0 2.434-.87 4.492-2.384 5.885h.002C11.978 15.292 10.158 16 8 16A8 8 0 1 1 8 0a7.7 7.7 0 0 1 5.352 2.082l-2.284 2.284A4.35 4.35 0 0 0 8 3.166c-2.087 0-3.86 1.408-4.492 3.304a4.8 4.8 0 0 0 0 3.063h.003c.635 1.893 2.405 3.301 4.492 3.301 1.078 0 2.004-.276 2.722-.764h-.003a3.7 3.7 0 0 0 1.599-2.431H8v-3.08z" />
+        </svg>Signin With Google </a></button>
+  </div>
+
+  <script>
+    function redirectToPro() {
+      window.location.href = '/home';
+    }
+  </script>
+</body>
+
+</html>

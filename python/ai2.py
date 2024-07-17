@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from pymongo import MongoClient
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, VotingClassifier, IsolationForest
 from sklearn.metrics import classification_report, accuracy_score, roc_auc_score, roc_curve, precision_recall_curve, confusion_matrix
 from sklearn.model_selection import train_test_split, RandomizedSearchCV
@@ -8,14 +9,33 @@ from sklearn.pipeline import Pipeline
 from xgboost import XGBClassifier
 import matplotlib.pyplot as plt
 import logging
+from imblearn.over_sampling import SMOTE
+import os
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-# Load CSV files and handle dtype
-logging.info("Loading CSV files...")
-output_file = pd.read_csv('output_file.csv', dtype={'Source Port': str, 'Bytes Sent': str, 'Bytes Received': str})
-dangerous_ip_file = pd.read_csv('Dangerous_IP.csv')
+# Connect to MongoDB and fetch data from the 'update' collection
+logging.info("Connecting to MongoDB...")
+client = MongoClient('mongodb+srv://project:project1234@cluster0.h4ufncx.mongodb.net/project?authSource=admin')
+db = client['project']
+output_file = db['update']
+finish_collection = db['finishes']
+file_path = 'python/Dangerous_IP.csv'
+
+# ดึงข้อมูลจาก MongoDB
+output_file_data = list(output_file.find({}, {'_id': 0}))  # Exclude '_id' field
+
+# แปลงข้อมูลเป็น DataFrame
+output_file = pd.DataFrame(output_file_data)
+
+# ตรวจสอบว่าไฟล์มีอยู่หรือไม่
+if not os.path.exists(file_path):
+    logging.error(f"The file {file_path} does not exist. Please check the file path.")
+else:
+    # อ่านไฟล์ Dangerous_IP.csv
+    dangerous_ip_file = pd.read_csv(file_path)
+
 
 # Convert Timestamp to datetime object
 output_file['Timestamp'] = pd.to_datetime(output_file['Timestamp'], errors='coerce')
@@ -49,7 +69,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 # Define models
 rf_model = RandomForestClassifier(random_state=42)
 gbc_model = GradientBoostingClassifier(random_state=42)
-xgb_model = XGBClassifier(random_state=42, use_label_encoder=False, eval_metric='logloss')
+xgb_model = XGBClassifier(random_state=42, eval_metric='logloss')
 
 # Create Voting Classifier
 voting_clf = VotingClassifier(estimators=[
@@ -73,7 +93,7 @@ param_distributions = {
 
 # Perform RandomizedSearchCV
 logging.info("Performing RandomizedSearchCV...")
-random_search = RandomizedSearchCV(pipeline, param_distributions, n_iter=10, cv=3, scoring='roc_auc', random_state=42)
+random_search = RandomizedSearchCV(pipeline, param_distributions, n_iter=8, cv=3, scoring='roc_auc', random_state=42)
 random_search.fit(X_train, y_train)
 
 # Best parameters and best score
@@ -174,8 +194,12 @@ def determine_status(row):
 # Apply the function to each row to create the 'status' column
 filtered_output_dangerous_ips['status'] = filtered_output_dangerous_ips.apply(determine_status, axis=1)
 
-# Save the filtered data to a new CSV file
-filtered_output_dangerous_ips.to_csv('filtered_output_dangerous_ai_with_status.csv', index=False)
+# Convert DataFrame to dictionary for MongoDB insertion
+filtered_output_dangerous_ips_dict = filtered_output_dangerous_ips.to_dict('records')
+
+# Insert filtered data into the 'finish' collection in MongoDB
+logging.info("Inserting filtered data into MongoDB...")
+finish_collection.insert_many(filtered_output_dangerous_ips_dict)
 
 # Display the first few rows of the filtered data
 logging.info("Filtered dangerous IPs with status:")
