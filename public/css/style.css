@@ -272,11 +272,6 @@ h6 {
   background-size: cover;
 }
 
-#hero .container,
-#hero .container-fluid {
-  padding-top: 84px;
-}
-
 #hero h2 {
   color: rgba(45, 45, 45, 0.8);
   margin-top: 10px;
@@ -307,6 +302,7 @@ h6 {
 
 .container_home {
   text-align: center;
+  padding-top: 10px;
 }
 
 .btn {

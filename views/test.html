@@ -1,133 +1,474 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="path/to/font-awesome/css/font-awesome.min.css">
-  <link rel="stylesheet" href="/public/css/bootstrap.min.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
   <link rel="stylesheet" href="/public/css/pro.css">
-  <!-- Goolge -->
-  <meta name="google-signin-client_id"
-    content="427624908596-uqqfs738r21anbinb64087lgeik1medo.apps.googleusercontent.com">
-  <!-- <script src="https://apis.google.com/js/platform.js" async defer></script> -->
-  <meta name="google-signin-scope" content="profile email">
-  <script src="https://apis.google.com/js/platform.js" async defer onload="init()"></script>
-
-  <!-- Goolge -->
-
-
-  <title>Login</title>
-  <style>
-    .topnav {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0px 20px 5px 20px;
-    }
-
-    .brand-container {
-      display: flex;
-      flex-direction: column;
-      border-right: 1px solid rgba(0, 0, 0, 0.427);
-      padding-right: 25px;
-      flex-shrink: 0;
-    }
-
-    .img_mfu {
-      margin-left: 0;
-      padding-left: 0;
-    }
-
-    .img_mfu img {
-      height: 60px;
-      width: 50px;
-    }
-
-    @media (max-width: 600px) {
-      .topnav {
-        flex-direction: column;
-        align-items: center;
-      }
-
-      .brand-container,
-      .img_mfu {
-        margin-bottom: 10px;
-        border-right: none;
-        padding-right: 0;
-      }
-
-      .img_mfu {
-        padding-left: 0;
-      }
-    }
-
-    .google-button {
-      display: inline-flex;
-      align-items: center;
-      padding: 15px 65px;
-      margin-top: 10px;
-      font-size: 16px;
-      border: none;
-      cursor: pointer;
-      background-image: linear-gradient(to right, #fd4203 0%, #f68223 100%);
-      color: white;
-      border-radius: 4px;
-      text-decoration: none;
-    }
-
-    .google-button a {
-      color: white;
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-    }
-
-    .google-button svg {
-      margin-right: 8px;
-    }
-  </style>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body>
+
   <div class="topnav">
-    <div class="brand-container">
-      <div class="brand">The case study of security information management</div>
-      <div class="brand">at Mae Fah Luang University</div>
+    <div class="navbrand">
+      <div class="brand-container">
+        <div class="brand">The case study of security information management</div>
+        <div class="brand">at Mae Fah Luang University</div>
+      </div>
+      <div class="mfu"><img src="/public/img/mfu.png" style="height: 60px; width:50px;"></div>
     </div>
-    <div class="img_mfu">
-      <img src="/public/img/mfu.png" alt="MFU Logo">
+
+    <div class="navbar-links">
+      <a class="active" href="#home" onclick="changeActiveLink(this)">Home</a>
+      <a href="#analysis" onclick="changeActiveLink(this)">Analysis</a>
+      <a href="#history" onclick="changeActiveLink(this)">History</a>
+      <a href="#" onclick="logout()"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+          class="bi bi-box-arrow-right" viewBox="0 0 16 16">
+          <path fill-rule="evenodd"
+            d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0z" />
+          <path fill-rule="evenodd"
+            d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z" />
+        </svg></a>
     </div>
   </div>
-  <div class="container">
-    <form action="#">
-      <div class="title">Login</div>
-      <div class="input-box underline">
-        <input type="text" placeholder="Enter Your Email"  required>
-        <div class="underline"></div>
+
+  <!-- home  -->
+  <style>
+    .container_home {
+      text-align: center;
+    }
+
+    .btn {
+      background-color: #5479e9;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 400px;
+    }
+
+    .wrapper {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    header {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+    #input-form {
+      margin-top: 20px;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    input[type="file"] {
+      margin-bottom: 20px;
+    }
+
+    button {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    .loading {
+      display: none;
+      margin-top: 20px;
+    }
+
+    .confirmed {
+      background-color: #A9A9A9 !important;
+      /* Grey */
+      cursor: default;
+    }
+  </style>
+
+  <div id="home" class="section_home">
+    <div class="container_home">
+      <div>
+        <h2>AI aids in the analysis of dubious or dangerous IP.</h2>
+        <p>This tool is currently under development.</p>
+        <p>Errors may occur. We apologize for this.</p>
       </div>
-      <div class="input-box">
-        <input type="password" placeholder="Enter Your Password" required>
-        <div class="underline"></div>
+      <div class="conhome">
+        <div id="input-form">
+          <img src="/public/img/drop.png" style="height: 170px; width: 170px;" id="dropImage">
+          <header id="file-name">Drop file here</header>
+          <form id="uploadForm" enctype="multipart/form-data">
+            <input type="file" name="file" id="file" accept=".csv" required />
+            <button type="submit" id="submit-form">Confirm</button>
+          </form>
+        </div>
       </div>
-      <div class="input-box button">
-        <input type="submit" onclick="redirectToPro()" value="Continue">
-      </div>
-      <!-- <div class="my-2">Not have account ? <a href="">Signin</a></div> -->
-    </form>
-    <div class="option">or Connect With Social Media</div>
-    <button class="google-button"><a href='/auth'><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-          fill="currentColor" class="bi bi-google text-center" viewBox="0 0 16 16">
-          <path
-            d="M15.545 6.558a9.4 9.4 0 0 1 .139 1.626c0 2.434-.87 4.492-2.384 5.885h.002C11.978 15.292 10.158 16 8 16A8 8 0 1 1 8 0a7.7 7.7 0 0 1 5.352 2.082l-2.284 2.284A4.35 4.35 0 0 0 8 3.166c-2.087 0-3.86 1.408-4.492 3.304a4.8 4.8 0 0 0 0 3.063h.003c.635 1.893 2.405 3.301 4.492 3.301 1.078 0 2.004-.276 2.722-.764h-.003a3.7 3.7 0 0 0 1.599-2.431H8v-3.08z" />
-        </svg>Signin With Google </a></button>
+      <button class="btn btn-primary" onclick="startTraining()">Click to training</button>
+    </div>
   </div>
 
   <script>
-    function redirectToPro() {
-      window.location.href = '/home';
+    ////// upload file ////
+    let filename = '';
+
+    document.getElementById('file').addEventListener('change', function (event) {
+      const file = event.target.files[0];
+      filename = file.name;
+      const fileExtension = filename.split('.').pop().toLowerCase();
+      if (fileExtension === 'csv') {
+        document.getElementById('dropImage').src = '/public/img/csv.png';
+        document.getElementById('file-name').innerText = filename;
+
+        const submitButton = document.getElementById('submit-form');
+        submitButton.innerText = 'Confirm';
+        submitButton.classList.remove('confirmed');
+        submitButton.disabled = false;
+      } else {
+        alert('Please select a CSV file.');
+        event.target.value = ''; // Clear the input field
+      }
+    });
+
+    document.getElementById('uploadForm').addEventListener('submit', async function (event) {
+      event.preventDefault();
+
+      const formData = new FormData();
+      const fileField = document.querySelector('input[type="file"]');
+      formData.append('file', fileField.files[0]);
+
+      const dropImage = document.getElementById('dropImage');
+      const fileNameHeader = document.getElementById('file-name');
+      const submitButton = document.getElementById('submit-form');
+
+      // Show loading spinner and message
+      dropImage.src = '/public/img/loading-spinner.webp';
+      fileNameHeader.innerText = 'Loading...';
+
+      try {
+        const response = await fetch('/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (response.ok) {
+          submitButton.innerText = 'Confirmed';
+          submitButton.classList.add('confirmed');
+          submitButton.disabled = true;
+        } else {
+          alert('File upload failed');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Error uploading file');
+      } finally {
+        // Reset image and header text after upload
+        dropImage.src = '/public/img/csv.png';
+        fileNameHeader.innerText = filename;
+      }
+    });
+
+    // ===== training =======
+    function startTraining() {
+      Swal.fire({
+        title: 'Training in progress',
+        text: 'Please wait while the training is being completed.',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+          fetch('/start_training', { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+              Swal.close();
+              Swal.fire({
+                title: 'Success',
+                text: 'Training started successfully.',
+                icon: 'success'
+              });
+            })
+            .catch(error => {
+              Swal.close();
+              Swal.fire({
+                title: 'Error',
+                text: 'There was an error starting the training. Please try again.',
+                icon: 'error'
+              });
+              console.error('Error:', error);
+            });
+        }
+      });
+    }
+
+  </script>
+
+  <!-- home  -->
+
+  <!-- Analysis -->
+  <style>
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .table-container {
+      height: 550px;
+      /* Fixed height for the table */
+      overflow-y: auto;
+      /* Enable vertical scrolling */
+      border: 1px solid #ccc;
+      padding: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      padding: 8px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #f2f2f2;
+    }
+  </style>
+
+  <div id="analysis" class="section">
+    <h2 class="text-center">Analysis Report</h2>
+    <hr>
+    <div class="table-container">
+      <table id="ipTable" class="table table-striped">
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>Source IP</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="table-body">
+          <!-- Table rows will be loaded dynamically -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const tableBody = document.getElementById('table-body');
+
+      // Fetch data from MongoDB (simulated here)
+      async function fetchData() {
+        try {
+          // Replace with actual fetch or AJAX call to your MongoDB data
+          const response = await fetch('/data');
+          const data = await response.json();
+          return data;
+        } catch (error) {
+          console.error('Error fetching data:', error);
+          return [];
+        }
+      }
+
+      async function populateTable() {
+        const data = await fetchData();
+
+        data.forEach((item, index) => {
+          const row = document.createElement('tr');
+          const noCell = document.createElement('td');
+          const ipCell = document.createElement('td');
+          const statusCell = document.createElement('td');
+
+          noCell.textContent = index + 1;
+          ipCell.textContent = item["Source IP"];
+          statusCell.textContent = item.status;
+
+          row.appendChild(noCell);
+          row.appendChild(ipCell);
+          row.appendChild(statusCell);
+          tableBody.appendChild(row);
+        });
+      }
+
+      populateTable();
+    });
+  </script>
+
+  <!-- Analysis -->
+
+  <!-- history -->
+  <style>
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      padding: 8px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #f2f2f2;
+    }
+
+    #btn-download {
+      padding: 5px 10px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      border-radius: 4px;
+    }
+
+    #btn-download:hover {
+      background-color: #45a049;
+    }
+  </style>
+
+  <div id="history" class="section">
+    <h2 class="text-center">History</h2>
+    <hr>
+    <div class="container">
+      <table class="table table-striped table-bordered">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>File name</th>
+            <th>Download</th>
+          </tr>
+        </thead>
+        <tbody id="download_csv">
+
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      (async function () {
+        const tableBody = document.getElementById('download_csv');
+
+        // Fetch data to check if the collection has data
+        async function checkFinishesData() {
+          try {
+            const response = await fetch('/checkFinishes'); // API endpoint to check data
+            const result = await response.json();
+            return result.hasData;
+          } catch (error) {
+            console.error('Error checking finishes data:', error);
+            return false;
+          }
+        }
+
+        if (await checkFinishesData()) {
+          const now = new Date();
+          const row = document.createElement('tr');
+          row.innerHTML = `
+          <td>${now.toISOString().split('T')[0]}</td>
+          <td>finishes.csv</td>
+          <td><a href="/downloadcsv" id="btn-download">Download</a></td>
+        `;
+          tableBody.appendChild(row);
+        }
+      })();
+    });
+    // document.addEventListener('DOMContentLoaded', function () {
+    //   const tableBody = document.getElementById('download_csv');
+
+    //   // Fetch data from MongoDB (simulated here)
+    //   async function fetchData() {
+    //     try {
+    //       const response = await fetch('/downloadcsv'); // Replace with your actual API endpoint
+    //       const data = await response.json();
+    //       return data;
+    //     } catch (error) {
+    //       console.error('Error fetching data:', error);
+    //       return [];
+    //     }
+    //   }
+
+    //   const now = new Date();
+    //   const row = document.createElement('tr');
+    //   row.innerHTML = `
+    //   <td>${now.toISOString().split('T')[0]}</td>
+    //   <td>finishes.csv</td>
+    //   <td><a href="/downloadcsv" id="btn-download">Download</a></td>
+    // `;
+    //   tableBody.appendChild(row);
+    // });
+  </script>
+  <!-- history -->
+
+
+
+
+
+  <script>
+    function changeActiveLink(element) {
+      var links = document.getElementsByClassName("topnav")[0].getElementsByTagName("a");
+      for (var i = 0; i < links.length; i++) {
+        links[i].classList.remove("active");
+      }
+      element.classList.add("active");
     }
   </script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const sections = document.querySelectorAll('.section, .section_home');
+      const navLinks = document.querySelectorAll('.navbar-links a');
+
+      function changeActiveLink() {
+        let index = sections.length;
+
+        while (--index && window.scrollY + 70 < sections[index].offsetTop) { } // 70 is the height of your navbar
+
+        navLinks.forEach((link) => link.classList.remove('active'));
+        navLinks[index].classList.add('active');
+      }
+
+      changeActiveLink();
+      window.addEventListener('scroll', changeActiveLink);
+    });
+
+    function logout() {
+      // Perform any necessary logout actions (e.g., clearing session, cookies, etc.)
+      // Redirect the user to the login page
+      window.location.href = '/login'; // Change '/login' to the actual URL of your login page
+    }
+  </script>
+
+
 </body>
 
 </html>
