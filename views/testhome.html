@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
     <!-- Favicons -->
-    <!-- <link href="assets/img/favicon.png" rel="icon"> -->
+    <link href="public/img/ip.png" rel="icon">
 
     <!-- Google Fonts -->
     <link
@@ -24,16 +24,15 @@
 
     <!-- ======= Header ======= -->
     <header id="header" class="fixed-top ">
-        <div class="container d-flex align-items-center justify-content-between">
-            <div class="logo">
-                <img src="/public/img/mfu.png">
-                <span>
-                    The case study of security information management
-                </span> <br>
-                <span class="ps-5">at Mae Fah Luang University</span>
+        <div class="container d-flex align-items-center">
+            <div class="logo_img">
+                <img src="/public/img/mfu.png" style="width: 50px; height: 60px;">
             </div>
-
-            <!-- <h6 class="logo"> <img src="assets/img/mfu.png"> The case study of security information management at Mae Fah Luang University</h6> -->
+            <div class="logo">
+                <!-- <img src="assets/img/mfu.png"> -->
+                <p>The case study of security information management</p>
+                <p>at Mae Fah Luang University</p>
+            </div>
 
             <nav id="navbar" class="navbar">
                 <ul>
@@ -182,10 +181,38 @@
     <main id="main">
 
         <!-- ======= About Section ======= -->
+        <style>
+            #about .table-container {
+                height: 500px;
+                /* Fixed height for the table */
+                overflow-y: auto;
+                /* Enable vertical scrolling */
+                border: 1px solid #ccc;
+                padding: 10px;
+                border-radius: 5px;
+            }
+
+            #about table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            th,
+            td {
+                padding: 8px;
+                text-align: left;
+                border-bottom: 1px solid #ddd;
+            }
+
+            th {
+                background-color: #f2f2f2;
+            }
+        </style>
         <section id="about" class="about">
             <div class="container">
-                <h2 class="text-center">Analysis Report</h2>
-                <hr>
+                <div class="section-title">
+                    <h2>Analysis Report</h2>
+                </div>
                 <div class="table-container">
                     <table id="ipTable" class="table table-striped">
                         <thead>
@@ -245,13 +272,54 @@
         </script><!-- End About Section -->
 
         <!-- ======= Services Section ======= -->
+        <style>
+            .table_container {
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 20px;
+                background-color: white;
+                border-radius: 10px;
+                box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            }
+
+            #services table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            th,
+            td {
+                padding: 8px;
+                text-align: left;
+                border-bottom: 1px solid #ddd;
+            }
+
+            th {
+                background-color: #f2f2f2;
+            }
+
+            #services #btn-download {
+                padding: 5px 10px;
+                background-color: #4CAF50;
+                color: white;
+                border: none;
+                cursor: pointer;
+                text-decoration: none;
+                border-radius: 4px;
+            }
+
+            #services #btn-download:hover {
+                background-color: #45a049;
+                color: black;
+            }
+        </style>
         <section id="services" class="services section-bg">
             <div class="container">
-
-                <h2 class="text-center">History</h2>
-                <hr>
-                <div class="container">
-                    <table class="table table-striped table-bordered">
+                <div class="his-title">
+                    <h2>History</h2>
+                </div>
+                <div class="table_container">
+                    <table class="table table-striped table-bordered" id="histable">
                         <thead>
                             <tr>
                                 <th>Date</th>
@@ -264,7 +332,6 @@
                         </tbody>
                     </table>
                 </div>
-
             </div>
         </section>
 

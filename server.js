@@ -62,6 +62,10 @@ app.get('/home', (req, res) => {
   res.sendFile(path.join(__dirname, 'views/pro.html'));
 });
 
+app.get('/test', (req, res) => {
+  res.sendFile(path.join(__dirname, 'views/testhome.html'));
+});
+
 // Model
 const LogFiles = mongoose.model('LogFiles', new mongoose.Schema({
   "File Name": String,
