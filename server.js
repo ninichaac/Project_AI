@@ -134,13 +134,23 @@ const finish = mongoose.model('finishes', new mongoose.Schema({
 }));
 
 // Route to fetch data from MongoDB (collection 'finish')
+// app.get('/data', async (req, res) => {
+//   try {
+//     const data = await finish.find({}, { "Source IP": 1, "status": 1, _id: 0 }); // ดึงเฉพาะ Source IP และ status
+//     res.status(200).json(data); // ส่งคืนข้อมูลในรูปแบบ JSON
+//   } catch (err) {
+//     console.error('Error fetching data from MongoDB:', err);
+//     res.status(500).send('Error fetching data from MongoDB'); // ส่งข้อความแจ้งเตือนในกรณีเกิดข้อผิดพลาด
+//   }
+// });
+
 app.get('/data', async (req, res) => {
   try {
-    const data = await finish.find({}, { "Source IP": 1, "status": 1, _id: 0 }); // ดึงเฉพาะ Source IP และ status
-    res.status(200).json(data); // ส่งคืนข้อมูลในรูปแบบ JSON
+    const data = await finish.find({}, { "Source IP": 1, "status": 1, _id: 0 }).sort({ uploadedAt: -1 }); // Sort by 'uploadedAt' in descending order to get the latest document
+    res.status(200).json(data); // Return the data in JSON format
   } catch (err) {
     console.error('Error fetching data from MongoDB:', err);
-    res.status(500).send('Error fetching data from MongoDB'); // ส่งข้อความแจ้งเตือนในกรณีเกิดข้อผิดพลาด
+    res.status(500).send('Error fetching data from MongoDB'); // Send an error message in case of a failure
   }
 });
 

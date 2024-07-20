@@ -7,7 +7,6 @@ from sklearn.model_selection import train_test_split, RandomizedSearchCV
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
 from xgboost import XGBClassifier
-import matplotlib.pyplot as plt
 import logging
 from imblearn.over_sampling import SMOTE
 import os
@@ -19,23 +18,22 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logging.info("Connecting to MongoDB...")
 client = MongoClient('mongodb+srv://project:project1234@cluster0.h4ufncx.mongodb.net/project?authSource=admin')
 db = client['project']
-output_file = db['update']
+output_file_collection = db['update']
 finish_collection = db['finishes']
 file_path = 'python/Dangerous_IP.csv'
 
-# ดึงข้อมูลจาก MongoDB
-output_file_data = list(output_file.find({}, {'_id': 0}))  # Exclude '_id' field
+# Fetch data from MongoDB
+output_file_data = list(output_file_collection.find({}, {'_id': 0}))  # Exclude '_id' field
 
-# แปลงข้อมูลเป็น DataFrame
+# Convert data to DataFrame
 output_file = pd.DataFrame(output_file_data)
 
-# ตรวจสอบว่าไฟล์มีอยู่หรือไม่
+# Check if the Dangerous_IP.csv file exists
 if not os.path.exists(file_path):
     logging.error(f"The file {file_path} does not exist. Please check the file path.")
 else:
-    # อ่านไฟล์ Dangerous_IP.csv
+    # Read Dangerous_IP.csv
     dangerous_ip_file = pd.read_csv(file_path)
-
 
 # Convert Timestamp to datetime object
 output_file['Timestamp'] = pd.to_datetime(output_file['Timestamp'], errors='coerce')
@@ -111,29 +109,29 @@ logging.info(f"ROC-AUC Score: {roc_auc}")
 # Calculate ROC curve
 fpr, tpr, thresholds = roc_curve(y_test, y_pred_proba)
 
-# Plot ROC curve
-plt.figure()
-plt.plot(fpr, tpr, label=f'ROC curve (area = {roc_auc:.2f})')
-plt.plot([0, 1], [0, 1], 'k--')
-plt.xlim([0.0, 1.0])
-plt.ylim([0.0, 1.05])
-plt.xlabel('False Positive Rate')
-plt.ylabel('True Positive Rate')
-plt.title('Receiver Operating Characteristic')
-plt.legend(loc="lower right")
-plt.show()
+# Plot ROC curve (Commented out as per your request)
+# plt.figure()
+# plt.plot(fpr, tpr, label=f'ROC curve (area = {roc_auc:.2f})')
+# plt.plot([0, 1], [0, 1], 'k--')
+# plt.xlim([0.0, 1.0])
+# plt.ylim([0.0, 1.05])
+# plt.xlabel('False Positive Rate')
+# plt.ylabel('True Positive Rate')
+# plt.title('Receiver Operating Characteristic')
+# plt.legend(loc="lower right")
+# plt.show()
 
 # Calculate Precision-Recall curve
 precision, recall, thresholds_pr = precision_recall_curve(y_test, y_pred_proba)
 
-# Plot Precision-Recall curve
-plt.figure()
-plt.plot(recall, precision, label='Precision-Recall curve')
-plt.xlabel('Recall')
-plt.ylabel('Precision')
-plt.title('Precision-Recall curve')
-plt.legend(loc="lower left")
-plt.show()
+# Plot Precision-Recall curve (Commented out as per your request)
+# plt.figure()
+# plt.plot(recall, precision, label='Precision-Recall curve')
+# plt.xlabel('Recall')
+# plt.ylabel('Precision')
+# plt.title('Precision-Recall curve')
+# plt.legend(loc="lower left")
+# plt.show()
 
 # Adjust threshold to balance precision and recall
 optimal_threshold = thresholds[np.argmax(tpr - fpr)]
