@@ -1,68 +1,40 @@
 import pandas as pd
-from pymongo import MongoClient
-from datetime import datetime
-import motor.motor_asyncio
-import asyncio
+import os
 
-# เชื่อมต่อกับ MongoDB
-client = motor.motor_asyncio.AsyncIOMotorClient('mongodb+srv://project:project1234@cluster0.h4ufncx.mongodb.net/project?authSource=admin')
-db = client['project']
-logfiles_collection = db['logfiles']
-update_collection = db['update']
+# Define the directories
+uploads_dir = 'uploads'
+update_dir = 'update'
 
-# Asynchronous function for processing data
-async def process_latest_file(latest_file_document):
-    # Extract data from the "Raw Event Log" field
-    raw_event_log = latest_file_document['Raw Event Log']
+# Get the latest CSV file from the 'uploads' directory
+files = [f for f in os.listdir(uploads_dir) if f.endswith('.csv')]
+latest_file = max(files, key=lambda f: os.path.getctime(os.path.join(uploads_dir, f)))
 
-    # Split the raw_event_log string into lines
-    raw_event_logs = raw_event_log.split('\n')
-    processed_data = []
+# Read the latest CSV file
+df = pd.read_csv(os.path.join(uploads_dir, latest_file))
 
-    for log in raw_event_logs:
-        parts = log.split(',')
-        if len(parts) > 113:  # Ensure there is sufficient data
-            processed_data.append({
-                'Country': parts[42].strip(),
-                'Timestamp': parts[1].strip(),
-                'Action': parts[30].strip(),
-                'Source IP': parts[7].strip(),
-                'Source Port': parts[24].strip(),
-                'Destination IP': parts[8].strip(),
-                'Destination Port': parts[25].strip(),
-                'Protocol': parts[29].strip(),
-                'Bytes Sent': parts[31].strip(),
-                'Bytes Received': parts[32].strip(),
-                'Threat Information': ','.join(parts[109:114]).strip()  # Corrected Threat Information merging
-            })
+# Split the 'Raw Event Log' column by commas
+df_split = df['Raw Event Log'].str.split(',', expand=True)
 
-    # Upload processed data to MongoDB
-    if processed_data:
-        try:
-            # Perform batch insert for efficiency
-            batch_size = 1000
-            tasks = []
-            for i in range(0, len(processed_data), batch_size):
-                task = update_collection.insert_many(processed_data[i:i+batch_size])
-                tasks.append(task)
-            await asyncio.gather(*tasks)
-        except Exception as e:
-            print(f"Error uploading data: {e}")
+# Create new columns based on the correct indices
+df['Country'] = df_split[42]            # Adjust the index based on the actual structure
+df['Timestamp'] = df_split[1]           # Timestamp
+df['Action'] = df_split[30]             # Action
+df['Source IP'] = df_split[7]           # Source IP
+df['Source Port'] = df_split[24]        # Corrected Source Port
+df['Destination IP'] = df_split[8]      # Destination IP
+df['Destination Port'] = df_split[25]   # Corrected Destination Port
+df['Protocol'] = df_split[29]           # Protocol
+df['Bytes Sent'] = df_split[31]         # Bytes Sent
+df['Bytes Received'] = df_split[32]     # Bytes Received
 
-    print("Data processing complete. Uploaded data to MongoDB successfully")
+# Concatenate columns 109, 110, 111, 112, 113 into 'Threat Information'
+df['Threat Information'] = df_split[[109, 110, 111, 112, 113]].apply(lambda x: ','.join(x.dropna().astype(str)), axis=1)
 
-# ฟังก์ชันสำหรับตรวจสอบการเปลี่ยนแปลงใน collection
-async def watch_logfiles_collection():
-    async for change in logfiles_collection.watch():
-        if change['operationType'] == 'insert':
-            print("New file upload detected. Processing...")
-            try:
-                latest_file_document = change['fullDocument']
-                await process_latest_file(latest_file_document)
-            except Exception as e:
-                print(f"An error occurred while processing a new file: {e}")
+# Select the desired columns in the specified order
+result_df = df[['Country', 'Timestamp', 'Action', 'Source IP', 'Source Port', 'Destination IP', 'Destination Port', 'Protocol', 'Bytes Sent', 'Bytes Received', 'Threat Information']]
 
-# เริ่มตรวจสอบการเปลี่ยนแปลงใน collection
-if __name__ == "__main__":
-    print("Start checking for changes to collection logfiles...")
-    asyncio.run(watch_logfiles_collection())
+# Save the result to a new CSV file in the 'update' directory
+result_csv_path = os.path.join(update_dir, 'processed_data.csv')
+result_df.to_csv(result_csv_path, index=False)
+
+print(f"Processed CSV saved to {result_csv_path}")

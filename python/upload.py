@@ -1,68 +1,66 @@
 import pandas as pd
-from pymongo import MongoClient
-from datetime import datetime
-import motor.motor_asyncio
-import asyncio
+import os
+import time
 
-# เชื่อมต่อกับ MongoDB
-client = MongoClient('mongodb+srv://project:project1234@cluster0.h4ufncx.mongodb.net/project?authSource=admin')
-db = client['project']
-logfiles_collection = db['logfiles']
-update_collection = db['update']
+# Define the directories
+uploads_dir = 'uploads'
+update_dir = 'update'
 
-# Function for processing data
-async def process_latest_file(latest_file_document):
-    # Extract data from the "Raw Event Log" field
-    raw_event_log = latest_file_document['Raw Event Log']
+# Check if the 'update' directory exists, create it if not
+if not os.path.exists(update_dir):
+    os.makedirs(update_dir)
 
-    # Split the raw_event_log string into lines
-    raw_event_logs = raw_event_log.split('\n')
-    processed_data = []
+# Function to process the latest CSV file
+def process_latest_file(latest_file):
+    processed_csv_path = os.path.join(update_dir, 'processed_data.csv')
+    
+    # Check if 'processed_data.csv' exists in 'update' directory and delete it
+    if os.path.exists(processed_csv_path):
+        os.remove(processed_csv_path)
 
-    for log in raw_event_logs:
-        parts = log.split(',')
-        if len(parts) > 113:  # Ensure there is sufficient data
-            processed_data.append({
-                'Country': parts[42].strip(),
-                'Timestamp': parts[1].strip(),
-                'Action': parts[30].strip(),
-                'Source IP': parts[7].strip(),
-                'Source Port': parts[24].strip(),
-                'Destination IP': parts[8].strip(),
-                'Destination Port': parts[25].strip(),
-                'Protocol': parts[29].strip(),
-                'Bytes Sent': parts[31].strip(),
-                'Bytes Received': parts[32].strip(),
-                'Threat Information': ','.join(parts[109:114]).strip()  # Corrected Threat Information merging
-            })
+    # Read the latest CSV file
+    df = pd.read_csv(os.path.join(uploads_dir, latest_file))
 
-    # Upload processed data to MongoDB
-    if processed_data:
-        try:
-            # Perform batch insert for efficiency
-            batch_size = 1000
-            for i in range(0, len(processed_data), batch_size):
-                await update_collection.insert_many(processed_data[i:i+batch_size])
-        except Exception as e:
-            print(f"Error uploading data: {e}")
+    # Split the 'Raw Event Log' column by commas
+    df_split = df['Raw Event Log'].str.split(',', expand=True)
 
-    print("Data processing complete. Uploaded data to MongoDB successfully")
+    # Create new columns based on the correct indices
+    df['Country'] = df_split[42]            # Adjust the index based on the actual structure
+    df['Timestamp'] = df_split[1]           # Timestamp
+    df['Action'] = df_split[30]             # Action
+    df['Source IP'] = df_split[7]           # Source IP
+    df['Source Port'] = df_split[24]        # Corrected Source Port
+    df['Destination IP'] = df_split[8]      # Destination IP
+    df['Destination Port'] = df_split[25]   # Corrected Destination Port
+    df['Protocol'] = df_split[29]           # Protocol
+    df['Bytes Sent'] = df_split[31]         # Bytes Sent
+    df['Bytes Received'] = df_split[32]     # Bytes Received
 
-# ฟังก์ชันสำหรับตรวจสอบการเปลี่ยนแปลงใน collection
-def watch_logfiles_collection():
-    with logfiles_collection.watch() as stream:
-        for change in stream:
-            if change['operationType'] == 'insert':
-                print("New file upload detected Processing...")
-                try:
-                    latest_file_document = change['fullDocument']
-                    process_latest_file(latest_file_document)
-                except Exception as e:
-                    print(f"An error occurred while processing a new file: {e}")
+    # Concatenate columns 109, 110, 111, 112, 113 into 'Threat Information'
+    df['Threat Information'] = df_split[[109, 110, 111, 112, 113]].apply(lambda x: ','.join(x.dropna().astype(str)), axis=1)
 
-# เริ่มตรวจสอบการเปลี่ยนแปลงใน collection
-if __name__ == "__main__":
-    print("Start checking for changes to collection logfiles...")
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(watch_logfiles_collection())
-    # watch_logfiles_collection()
+    # Select the desired columns in the specified order
+    result_df = df[['Country', 'Timestamp', 'Action', 'Source IP', 'Source Port', 'Destination IP', 'Destination Port', 'Protocol', 'Bytes Sent', 'Bytes Received', 'Threat Information']]
+
+    # Save the result to a new CSV file in the 'update' directory
+    result_df.to_csv(processed_csv_path, index=False)
+
+    print(f"Processed CSV saved to {processed_csv_path}")
+
+# Continuously check for new files
+latest_processed_file = None
+
+while True:
+    files = [f for f in os.listdir(uploads_dir) if f.endswith('.csv')]
+    
+    if not files:
+        print("No CSV files found, waiting for new files...")
+    else:
+        latest_file = max(files, key=lambda f: os.path.getctime(os.path.join(uploads_dir, f)))
+        
+        if latest_file != latest_processed_file:
+            print(f"Processing new file: {latest_file}")
+            process_latest_file(latest_file)
+            latest_processed_file = latest_file
+
+    time.sleep(10)  # Wait for 10 seconds before checking again

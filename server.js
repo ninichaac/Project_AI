@@ -66,50 +66,25 @@ app.get('/test', (req, res) => {
   res.sendFile(path.join(__dirname, 'views/testhome.html'));
 });
 
-// Model
-const LogFiles = mongoose.model('LogFiles', new mongoose.Schema({
-  "File Name": String,
-  "Event Receive Time": String,
-  "Reporting IP": String,
-  "Event Type": String,
-  "Event Name": String,
-  "Raw Event Log": String,
-}));
-
 // Multer setup
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, 'uploads/');
   },
   filename: (req, file, cb) => {
-    cb(null, file.fieldname + '-' + Date.now() + '.csv');
+    cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
   }
 });
 const upload = multer({ storage: storage });
 
 // Route
 app.post('/upload', upload.single('file'), (req, res) => {
-  const results = [];
-  fs.createReadStream(req.file.path)
-    .pipe(csvParser())
-    .on('data', (data) => results.push(data))
-    .on('end', async () => {
-      try {
-        await LogFiles.insertMany(results.map(result => ({
-          "File Name": req.file.originalname,
-          "Event Receive Time": result['Event Receive Time'],
-          "Reporting IP": result['Reporting IP'],
-          "Event Type": result['Event Type'],
-          "Event Name": result['Event Name'],
-          "Raw Event Log": result['Raw Event Log'],
-        })));
-        console.log('CSV data successfully inserted into MongoDB');
-        res.status(200).send('File uploaded and data inserted into MongoDB');
-      } catch (err) {
-        console.log('Error inserting CSV data into MongoDB', err);
-        res.status(500).send('Error inserting CSV data into MongoDB');
-      }
-    });
+  if (!req.file) {
+    return res.status(400).send('No file uploaded.');
+  }
+
+  console.log('File uploaded successfully:', req.file.path);
+  res.status(200).send('File uploaded successfully.');
 });
 
 // Add this route to handle training initiation
@@ -129,30 +104,31 @@ app.post('/start_training', (req, res) => {
 });
 
 const finish = mongoose.model('finishes', new mongoose.Schema({
+  "Country": String,
   "Source IP": String,
+  "Destination IP": String,
+  "Threat Information": String,
   "status": String,
+  "uploadedAt": { type: Date, default: Date.now } // เพิ่มฟิลด์นี้
 }));
-
-// Route to fetch data from MongoDB (collection 'finish')
-// app.get('/data', async (req, res) => {
-//   try {
-//     const data = await finish.find({}, { "Source IP": 1, "status": 1, _id: 0 }); // ดึงเฉพาะ Source IP และ status
-//     res.status(200).json(data); // ส่งคืนข้อมูลในรูปแบบ JSON
-//   } catch (err) {
-//     console.error('Error fetching data from MongoDB:', err);
-//     res.status(500).send('Error fetching data from MongoDB'); // ส่งข้อความแจ้งเตือนในกรณีเกิดข้อผิดพลาด
-//   }
-// });
 
 app.get('/data', async (req, res) => {
   try {
-    const data = await finish.find({}, { "Source IP": 1, "status": 1, _id: 0 }).sort({ uploadedAt: -1 }); // Sort by 'uploadedAt' in descending order to get the latest document
+    const data = await finish.find({}, { 
+      "Country": 1,
+      "Source IP": 1,
+      "Destination IP": 1,
+      "Threat Information": 1,
+      "status": 1,
+      _id: 0 
+    }).sort({ uploadedAt: -1 }); // Sort by 'uploadedAt' in descending order
     res.status(200).json(data); // Return the data in JSON format
   } catch (err) {
     console.error('Error fetching data from MongoDB:', err);
     res.status(500).send('Error fetching data from MongoDB'); // Send an error message in case of a failure
   }
 });
+
 
 // app.get('/downloadcsv', async (req, res) => {
 //   try {
