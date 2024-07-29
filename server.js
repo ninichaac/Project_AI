@@ -103,6 +103,34 @@ app.post('/start_training', (req, res) => {
   });
 });
 
+// const finish = mongoose.model('finishes', new mongoose.Schema({
+//   "Country": String,
+//   "Source IP": String,
+//   "Destination IP": String,
+//   "Threat Information": String,
+//   "status": String,
+//   "uploadedAt": { type: Date, default: Date.now } // เพิ่มฟิลด์นี้
+// }));
+
+// app.get('/data', async (req, res) => {
+//   try {
+//     const data = await finish.find({}, { 
+//       "Country": 1,
+//       "Source IP": 1,
+//       "Destination IP": 1,
+//       "Threat Information": 1,
+//       "status": 1,
+//       _id: 0 
+//     }).sort({ uploadedAt: -1 }).limit(100); // Sort by 'uploadedAt' in descending order
+//     res.status(200).json(data); // Return the data in JSON format
+//   } catch (err) {
+//     console.error('Error fetching data from MongoDB:', err);
+//     res.status(500).send('Error fetching data from MongoDB'); // Send an error message in case of a failure
+//   }
+// });
+
+
+const moment = require('moment');
 const finish = mongoose.model('finishes', new mongoose.Schema({
   "Country": String,
   "Source IP": String,
@@ -114,35 +142,44 @@ const finish = mongoose.model('finishes', new mongoose.Schema({
 
 app.get('/data', async (req, res) => {
   try {
-    const data = await finish.find({}, { 
-      "Country": 1,
-      "Source IP": 1,
-      "Destination IP": 1,
-      "Threat Information": 1,
-      "status": 1,
-      _id: 0 
-    }).sort({ uploadedAt: -1 }); // Sort by 'uploadedAt' in descending order
-    res.status(200).json(data); // Return the data in JSON format
+    // ขั้นตอนที่ 1: หา timestamp 'uploadedAt' ที่ล่าสุดที่สุด
+    const mostRecent = await finish.findOne({}, { uploadedAt: 1 }).sort({ uploadedAt: -1 });
+
+    if (mostRecent) {
+      // ขั้นตอนที่ 2: ปรับ timestamp 'uploadedAt' ให้เปรียบเทียบในระดับนาที
+      const mostRecentMinute = moment(mostRecent.uploadedAt).startOf('minute');
+
+      // ขั้นตอนที่ 3: ดึงข้อมูลทั้งหมดที่มี timestamp 'uploadedAt' ในระดับนาทีเดียวกัน
+      const data = await finish.find(
+        {
+          uploadedAt: {
+            $gte: mostRecentMinute.toDate(),
+            $lt: moment(mostRecentMinute).add(1, 'minute').toDate()
+          }
+        },
+        {
+          "Country": 1,
+          "Source IP": 1,
+          "Destination IP": 1,
+          "Threat Information": 1,
+          "status": 1,
+          _id: 0
+        }
+      );
+
+      res.status(200).json(data); // ส่งข้อมูลในรูปแบบ JSON
+    } else {
+      res.status(200).json([]); // ส่ง array ว่างถ้าไม่พบข้อมูล
+    }
   } catch (err) {
     console.error('Error fetching data from MongoDB:', err);
-    res.status(500).send('Error fetching data from MongoDB'); // Send an error message in case of a failure
+    res.status(500).send('Error fetching data from MongoDB'); // ส่งข้อความ error ถ้าเกิดข้อผิดพลาด
   }
 });
 
 
-// app.get('/downloadcsv', async (req, res) => {
-//   try {
-//     const finishes = mongoose.model('finishes');
-//     const data = await finishes.find();
-//     res.status(200).json(data);
-//   } catch (error) {
-//     console.error('Error fetching data:', error);
-//     res.status(500).json({ error: 'Error fetching data' });
-//   }
-// });
 
-// const finishesSchema = new mongoose.Schema({}, { collection: 'finishes' });
-// const Finishes = mongoose.model('finishes', finishesSchema);
+
 
 app.get('/downloadcsv', async (req, res) => {
   try {

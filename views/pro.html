@@ -78,7 +78,7 @@
           </form>
         </div>
       </div>
-      <button class="btn btn-primary" onclick="startTraining()" id="start-training-button">Click to training</button>
+      <button class="btn btn-primary" id="start-training-button">Click to training</button>
     </div>
 
   </section>
@@ -140,6 +140,16 @@
             title: 'Success',
             text: 'File uploaded successfully.',
             icon: 'success'
+          }).then(() => {
+            Swal.fire({
+              title: 'Preparing files...',
+              text: 'Please wait while we prepare the file for training.',
+              allowOutsideClick: false,
+              timer: 20000,
+              didOpen: () => {
+                Swal.showLoading();
+              }
+            });
           });
         } else {
           throw new Error('File upload failed');
@@ -198,9 +208,126 @@
         }
       });
     }
-
-    // Example button to start training (ensure this button is linked to startTraining function)
     document.getElementById('start-training-button').addEventListener('click', startTraining);
+
+
+    // // Initialize file upload status
+    // let isFileUploaded = false;
+
+    // // File upload handler
+    // document.getElementById('file').addEventListener('change', function (event) {
+    //   const file = event.target.files[0];
+    //   const filename = file ? file.name : '';
+    //   const fileExtension = filename.split('.').pop().toLowerCase();
+
+    //   if (fileExtension === 'csv') {
+    //     document.getElementById('dropImage').src = 'public/img/csv.png';
+    //     document.getElementById('file-name').innerText = filename;
+
+    //     document.getElementById('submit-form').innerText = 'Confirm';
+    //     document.getElementById('submit-form').classList.remove('confirmed');
+    //     document.getElementById('submit-form').disabled = false;
+    //   } else {
+    //     alert('Please select a CSV file.');
+    //     event.target.value = ''; // Clear the input field
+    //   }
+    // });
+
+    // document.getElementById('uploadForm').addEventListener('submit', async function (event) {
+    //   event.preventDefault();
+
+    //   const formData = new FormData();
+    //   const fileField = document.querySelector('input[type="file"]');
+    //   formData.append('file', fileField.files[0]);
+
+    //   // Show Swal loading spinner
+    //   Swal.fire({
+    //     title: 'Uploading...',
+    //     text: 'Please wait while the file is being uploaded.',
+    //     allowOutsideClick: false,
+    //     didOpen: () => {
+    //       Swal.showLoading();
+    //     }
+    //   });
+
+    //   try {
+    //     const response = await fetch('/upload', {
+    //       method: 'POST',
+    //       body: formData
+    //     });
+
+    //     if (response.ok) {
+    //       isFileUploaded = true;
+    //       document.getElementById('submit-form').innerText = 'Confirmed';
+    //       document.getElementById('submit-form').classList.add('confirmed');
+    //       document.getElementById('submit-form').disabled = true;
+    //       Swal.close();
+
+    //       Swal.fire({
+    //         title: 'Success',
+    //         text: 'File uploaded successfully.',
+    //         icon: 'success'
+    //       });
+    //     } else {
+    //       throw new Error('File upload failed');
+    //     }
+    //   } catch (error) {
+    //     console.error('Error:', error);
+    //     Swal.close();
+    //     Swal.fire({
+    //       title: 'Error',
+    //       text: 'Error uploading file',
+    //       icon: 'error'
+    //     });
+    //   } finally {
+    //     // Reset image and header text after upload
+    //     document.getElementById('dropImage').src = 'public/img/csv.png';
+    //     document.getElementById('file-name').innerText = filename;
+    //   }
+    // });
+
+    // // Training initiation
+    // function startTraining() {
+    //   if (!isFileUploaded) {
+    //     Swal.fire({
+    //       title: 'Error',
+    //       text: 'Please upload a file before starting the training.',
+    //       icon: 'error'
+    //     });
+    //     return;
+    //   }
+
+    //   Swal.fire({
+    //     title: 'Training in progress',
+    //     text: 'Please wait while the training is being completed.',
+    //     allowOutsideClick: false,
+    //     didOpen: () => {
+    //       Swal.showLoading();
+    //       fetch('/start_training', { method: 'POST' })
+    //         .then(response => response.json())
+    //         .then(data => {
+    //           Swal.close();
+    //           Swal.fire({
+    //             title: 'Success',
+    //             text: 'Training started successfully.',
+    //             icon: 'success'
+    //           });
+    //         })
+    //         .catch(error => {
+    //           Swal.close();
+    //           Swal.fire({
+    //             title: 'Error',
+    //             text: 'There was an error starting the training. Please try again.',
+    //             icon: 'error'
+    //           });
+    //           console.error('Error:', error);
+    //         });
+    //     }
+    //   });
+    // }
+
+    // // Example button to start training (ensure this button is linked to startTraining function)
+    // document.getElementById('start-training-button').addEventListener('click', startTraining);
 
 
   </script>
@@ -412,6 +539,7 @@
     </section>
 
     <script>
+      
       document.addEventListener('DOMContentLoaded', function () {
         (async function () {
           const tableBody = document.getElementById('download_csv');
@@ -440,6 +568,7 @@
           }
         })();
       });
+
     </script>
     <!-- End Services Section -->
 
