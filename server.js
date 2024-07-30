@@ -181,68 +181,188 @@ app.get('/data', async (req, res) => {
 
 
 
-app.get('/downloadcsv', async (req, res) => {
-  try {
-    const Finishes = mongoose.model('finishes');
-    const data = await Finishes.find().lean();
+// app.get('/downloadcsv', async (req, res) => {
+//   try {
+//     const Finishes = mongoose.model('finishes');
+//     const data = await Finishes.find().lean();
 
-    // Remove _id field from each document
-    const filteredData = data.map(({ _id, Timestamp, ...rest }) => ({
-      ...rest,
-      Timestamp: new Date(Timestamp).toISOString(),
+//     // Remove _id field from each document
+//     const filteredData = data.map(({ _id, Timestamp, ...rest }) => ({
+//       ...rest,
+//       Timestamp: new Date(Timestamp).toISOString(),
+//     }));
+
+
+//     const csvWriter = createObjectCsvWriter({
+//       path: 'finishes.csv',
+//       header: [
+//         { id: 'Country', title: 'Country' },
+//         { id: 'Timestamp', title: 'Timestamp' },
+//         { id: 'Action', title: 'Action' },
+//         { id: 'Source IP', title: 'Source IP' },
+//         { id: 'Source Port', title: 'Source Port' },
+//         { id: 'Destination IP', title: 'Destination IP' },
+//         { id: 'Destination Port', title: 'Destination Port' },
+//         { id: 'Protocol', title: 'Protocol' },
+//         { id: 'Bytes Sent', title: 'Bytes Sent' },
+//         { id: 'Bytes Received', title: 'Bytes Received' },
+//         { id: 'Threat Information', title: 'Threat Information' },
+//         { id: 'label', title: 'label' },
+//         { id: 'anomaly_score', title: 'anomaly_score' },
+//         { id: 'is_anomalous_isolation_forest', title: 'is_anomalous_isolation_forest' },
+//         { id: 'y_pred_custom_threshold', title: 'y_pred_custom_threshold' },
+//         { id: 'status', title: 'status' },
+//       ],
+//     });
+
+//     await csvWriter.writeRecords(filteredData);
+
+//     res.download('finishes.csv', 'finishes.csv', (err) => {
+//       if (err) {
+//         console.error('Error downloading the file:', err);
+//         res.status(500).json({ error: 'Error downloading the file' });
+//       }
+
+//       // Delete the file after download
+//       fs.unlinkSync('finishes.csv');
+//     });
+//   } catch (error) {
+//     console.error('Error fetching data:', error);
+//     res.status(500).json({ error: 'Error fetching data' });
+//   }
+// });
+
+// app.get('/checkFinishes', async (req, res) => {
+//   try {
+//     const Finishes = mongoose.model('finishes');
+//     const count = await Finishes.countDocuments();
+//     res.json({ hasData: count > 0 });
+//   } catch (error) {
+//     console.error('Error checking data:', error);
+//     res.status(500).json({ error: 'Error checking data' });
+//   }
+// });
+
+
+
+const finishSchema = new mongoose.Schema({
+  "Country": String,
+  "Timestamp": Date,
+  "Action": String,
+  "Source IP": String,
+  "Source Port": Number,
+  "Destination IP": String,
+  "Destination Port": Number,
+  "Protocol": String,
+  "Bytes Sent": Number,
+  "Bytes Received": Number,
+  "Threat Information": String,
+  "label": String,
+  "anomaly_score": Number,
+  "is_anomalous_isolation_forest": Boolean,
+  "y_pred_custom_threshold": Boolean,
+  "status": String,
+  "uploadedAt": { type: Date, default: Date.now }
+});
+const Finish = mongoose.model('Finishes', finishSchema);
+
+// Ensure the 'csv' directory exists
+const csvDir = path.join(__dirname, 'csv');
+if (!fs.existsSync(csvDir)) {
+  fs.mkdirSync(csvDir);
+}
+
+app.get('/datacsv', async (req, res) => {
+  try {
+    const mostRecent = await Finish.findOne({}, { uploadedAt: 1 }).sort({ uploadedAt: -1 });
+
+    if (mostRecent) {
+      const mostRecentMinute = moment(mostRecent.uploadedAt).startOf('minute');
+
+      const data = await Finish.find({
+        uploadedAt: {
+          $gte: mostRecentMinute.toDate(),
+          $lt: moment(mostRecentMinute).add(1, 'minute').toDate()
+        }
+      }, {
+        "Country": 1,
+        "Timestamp": 1,
+        "Action": 1,
+        "Source IP": 1,
+        "Source Port": 1,
+        "Destination IP": 1,
+        "Destination Port": 1,
+        "Protocol": 1,
+        "Bytes Sent": 1,
+        "Bytes Received": 1,
+        "Threat Information": 1,
+        "label": 1,
+        "anomaly_score": 1,
+        "is_anomalous_isolation_forest": 1,
+        "y_pred_custom_threshold": 1,
+        "status": 1,
+        _id: 0
+      });
+
+      // Create a new CSV file with a unique timestamp
+      const timestamp = moment().format('YYYYMMDD_HHmmss');
+      const csvFilename = `data_${timestamp}.csv`;
+
+      const csvWriter = createCsvWriter({
+        path: path.join(csvDir, csvFilename),
+        header: [
+          { id: 'Country', title: 'Country' },
+          { id: 'Timestamp', title: 'Timestamp' },
+          { id: 'Action', title: 'Action' },
+          { id: 'Source IP', title: 'Source IP' },
+          { id: 'Source Port', title: 'Source Port' },
+          { id: 'Destination IP', title: 'Destination IP' },
+          { id: 'Destination Port', title: 'Destination Port' },
+          { id: 'Protocol', title: 'Protocol' },
+          { id: 'Bytes Sent', title: 'Bytes Sent' },
+          { id: 'Bytes Received', title: 'Bytes Received' },
+          { id: 'Threat Information', title: 'Threat Information' },
+          { id: 'label', title: 'label' },
+          { id: 'anomaly_score', title: 'anomaly_score' },
+          { id: 'is_anomalous_isolation_forest', title: 'is_anomalous_isolation_forest' },
+          { id: 'y_pred_custom_threshold', title: 'y_pred_custom_threshold' },
+          { id: 'status', title: 'status' }
+        ]
+      });
+
+      await csvWriter.writeRecords(data);
+
+      res.status(200).json(data);
+    } else {
+      res.status(200).json([]);
+    }
+  } catch (err) {
+    console.error('Error fetching data from MongoDB:', err);
+    res.status(500).send('Error fetching data from MongoDB');
+  }
+});
+
+app.get('/listCsvFiles', (req, res) => {
+  fs.readdir(csvDir, (err, files) => {
+    if (err) {
+      console.error('Error reading CSV directory:', err);
+      return res.status(500).send('Error reading CSV directory');
+    }
+
+    const csvFiles = files.filter(file => file.endsWith('.csv')).map(file => ({
+      filename: file,
+      uploadTimestamp: fs.statSync(path.join(csvDir, file)).mtime
     }));
 
-
-    const csvWriter = createObjectCsvWriter({
-      path: 'finishes.csv',
-      header: [
-        { id: 'Country', title: 'Country' },
-        { id: 'Timestamp', title: 'Timestamp' },
-        { id: 'Action', title: 'Action' },
-        { id: 'Source IP', title: 'Source IP' },
-        { id: 'Source Port', title: 'Source Port' },
-        { id: 'Destination IP', title: 'Destination IP' },
-        { id: 'Destination Port', title: 'Destination Port' },
-        { id: 'Protocol', title: 'Protocol' },
-        { id: 'Bytes Sent', title: 'Bytes Sent' },
-        { id: 'Bytes Received', title: 'Bytes Received' },
-        { id: 'Threat Information', title: 'Threat Information' },
-        { id: 'label', title: 'label' },
-        { id: 'anomaly_score', title: 'anomaly_score' },
-        { id: 'is_anomalous_isolation_forest', title: 'is_anomalous_isolation_forest' },
-        { id: 'y_pred_custom_threshold', title: 'y_pred_custom_threshold' },
-        { id: 'status', title: 'status' },
-      ],
-    });
-
-    await csvWriter.writeRecords(filteredData);
-
-    res.download('finishes.csv', 'finishes.csv', (err) => {
-      if (err) {
-        console.error('Error downloading the file:', err);
-        res.status(500).json({ error: 'Error downloading the file' });
-      }
-
-      // Delete the file after download
-      fs.unlinkSync('finishes.csv');
-    });
-  } catch (error) {
-    console.error('Error fetching data:', error);
-    res.status(500).json({ error: 'Error fetching data' });
-  }
+    res.status(200).json(csvFiles);
+  });
 });
 
-app.get('/checkFinishes', async (req, res) => {
-  try {
-    const Finishes = mongoose.model('finishes');
-    const count = await Finishes.countDocuments();
-    res.json({ hasData: count > 0 });
-  } catch (error) {
-    console.error('Error checking data:', error);
-    res.status(500).json({ error: 'Error checking data' });
-  }
+app.get('/downloadcsv', (req, res) => {
+  const filename = req.query.filename;
+  const filePath = path.join(csvDir, filename);
+  res.download(filePath);
 });
-
 
 
 

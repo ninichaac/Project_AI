@@ -1,0 +1,28 @@
+Country,Timestamp,Action,Source IP,Source Port,Destination IP,Destination Port,Protocol,Bytes Sent,Bytes Received,Threat Information,label,anomaly_score,is_anomalous_isolation_forest,y_pred_custom_threshold,status
+United States,2024-03-12T10:53:35.000Z,allow,10.1.19.74,58046,74.125.68.157,443,udp,11132,4523,"tunnel-other-application,,quic,no,no",1,0.07833670106465218,0,0,Risk
+Sweden,2024-03-12T10:53:59.000Z,reset-both,172.25.32.226,6881,185.157.221.247,25401,udp,161,161,"""evasive-behavior,consume-big-bandwidth,used-by-malware,able-to-transfer-file,has-known-vulnerability",0,-0.005255896297129303,1,1,Dangerous
+Thailand,2024-03-12T10:53:43.000Z,deny,89.248.163.168,57448,202.28.46.132,50624,tcp,62,62,",,not-applicable,no,no",1,0.022406715793025,0,1,High Risk
+Thailand,2024-03-12T10:53:59.000Z,allow,172.25.113.132,64366,163.70.149.15,443,udp,11586,5468,"tunnel-other-application,,quic,no,no",0,0.12656265478998624,0,1,Risk
+Hong Kong,2024-03-12T10:53:59.000Z,allow,172.25.216.178,56904,17.253.84.123,123,udp,188,94,"""used-by-malware,pervasive-use"",ntp,ntp-base,no",0,0.08042990594719635,0,1,Risk
+United States,2024-03-12T10:53:59.000Z,allow,172.25.156.165,54674,74.125.130.113,443,tcp,10505,2713,"""used-by-malware,able-to-transfer-file,has-known-vulnerability,tunnel-other-application,pervasive-use""",0,0.18164900452686472,0,1,Risk
+Thailand,2024-03-12T10:53:59.000Z,allow,43.175.47.209,0,202.28.46.234,0,icmp,408,204,"""has-known-vulnerability,tunnel-other-application,pervasive-use"",,untunneled",0,0.07162961465428108,0,1,Risk
+Thailand,2024-03-12T10:53:59.000Z,drop,167.94.138.104,24676,202.28.44.27,62569,tcp,62,62,",,not-applicable,no,no",1,0.07633413037142922,0,1,High Risk
+United States,2024-03-12T10:53:35.000Z,allow,10.1.19.74,58046,74.125.68.157,443,udp,11132,4523,"tunnel-other-application,,quic,no,no",1,0.07833670106465218,0,0,Risk
+Sweden,2024-03-12T10:53:59.000Z,reset-both,172.25.32.226,6881,185.157.221.247,25401,udp,161,161,"""evasive-behavior,consume-big-bandwidth,used-by-malware,able-to-transfer-file,has-known-vulnerability",0,-0.005255896297129303,1,1,Dangerous
+Thailand,2024-03-12T10:53:43.000Z,deny,89.248.163.168,57448,202.28.46.132,50624,tcp,62,62,",,not-applicable,no,no",1,0.022406715793025,0,1,High Risk
+Thailand,2024-03-12T10:53:59.000Z,allow,172.25.113.132,64366,163.70.149.15,443,udp,11586,5468,"tunnel-other-application,,quic,no,no",0,0.12656265478998624,0,1,Risk
+Hong Kong,2024-03-12T10:53:59.000Z,allow,172.25.216.178,56904,17.253.84.123,123,udp,188,94,"""used-by-malware,pervasive-use"",ntp,ntp-base,no",0,0.08042990594719635,0,1,Risk
+United States,2024-03-12T10:53:59.000Z,allow,172.25.156.165,54674,74.125.130.113,443,tcp,10505,2713,"""used-by-malware,able-to-transfer-file,has-known-vulnerability,tunnel-other-application,pervasive-use""",0,0.18164900452686472,0,1,Risk
+Thailand,2024-03-12T10:53:59.000Z,allow,43.175.47.209,0,202.28.46.234,0,icmp,408,204,"""has-known-vulnerability,tunnel-other-application,pervasive-use"",,untunneled",0,0.07162961465428108,0,1,Risk
+Thailand,2024-03-12T10:53:59.000Z,drop,167.94.138.104,24676,202.28.44.27,62569,tcp,62,62,",,not-applicable,no,no",1,0.07633413037142922,0,1,High Risk
+United States,2024-03-12T10:53:35.000Z,allow,10.1.19.74,58046,74.125.68.157,443,udp,11132,4523,"tunnel-other-application,,quic,no,no",1,0.07833670106465218,0,0,Risk
+Sweden,2024-03-12T10:53:59.000Z,reset-both,172.25.32.226,6881,185.157.221.247,25401,udp,161,161,"""evasive-behavior,consume-big-bandwidth,used-by-malware,able-to-transfer-file,has-known-vulnerability",0,-0.005255896297129303,1,1,Dangerous
+Thailand,2024-03-12T10:53:43.000Z,deny,89.248.163.168,57448,202.28.46.132,50624,tcp,62,62,",,not-applicable,no,no",1,0.022406715793025,0,1,High Risk
+Thailand,2024-03-12T10:53:59.000Z,allow,172.25.113.132,64366,163.70.149.15,443,udp,11586,5468,"tunnel-other-application,,quic,no,no",0,0.12656265478998624,0,1,Risk
+Hong Kong,2024-03-12T10:53:59.000Z,allow,172.25.216.178,56904,17.253.84.123,123,udp,188,94,"""used-by-malware,pervasive-use"",ntp,ntp-base,no",0,0.08042990594719635,0,1,Risk
+United States,2024-03-12T10:53:59.000Z,allow,172.25.156.165,54674,74.125.130.113,443,tcp,10505,2713,"""used-by-malware,able-to-transfer-file,has-known-vulnerability,tunnel-other-application,pervasive-use""",0,0.18164900452686472,0,1,Risk
+Thailand,2024-03-12T10:53:59.000Z,allow,43.175.47.209,0,202.28.46.234,0,icmp,408,204,"""has-known-vulnerability,tunnel-other-application,pervasive-use"",,untunneled",0,0.07162961465428108,0,1,Risk
+Thailand,2024-03-12T10:53:59.000Z,drop,167.94.138.104,24676,202.28.44.27,62569,tcp,62,62,",,not-applicable,no,no",1,0.07633413037142922,0,1,High Risk
+United States,2024-03-12T10:53:35.000Z,allow,10.1.19.74,58046,74.125.68.157,443,udp,11132,4523,"tunnel-other-application,,quic,no,no",1,0.07833670106465218,0,0,Risk
+Sweden,2024-03-12T10:53:59.000Z,reset-both,172.25.32.226,6881,185.157.221.247,25401,udp,161,161,"""evasive-behavior,consume-big-bandwidth,used-by-malware,able-to-transfer-file,has-known-vulnerability",0,-0.005255896297129303,1,1,Dangerous
+Thailand,2024-03-12T10:53:43.000Z,deny,89.248.163.168,57448,202.28.46.132,50624,tcp,62,62,",,not-applicable,no,no",1,0.022406715793025,0,1,High Risk
