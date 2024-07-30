@@ -164,7 +164,7 @@ const finish = mongoose.model('finishes', new mongoose.Schema({
   "Destination IP": String,
   "Threat Information": String,
   "status": String,
-  "uploadedAt": { type: Date, default: Date.now } // เพิ่มฟิลด์นี้
+  "uploadedAt": { type: Date, default: Date.now }
 }));
 
 app.get('/data', async (req, res) => {
