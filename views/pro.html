@@ -18,7 +18,7 @@
 
   <!-- Template Main CSS File -->
   <link href="/public/css/style.css" rel="stylesheet">
-  <title>SECURITY INFORMATION MANAGEMENT</title>
+  <title>Security Information Management</title>
 </head>
 
 <body>
@@ -195,6 +195,8 @@
                 title: 'Success',
                 text: 'Training started successfully.',
                 icon: 'success'
+              }).then(() => {
+                window.location.reload(); // Reload the page after successful training
               });
             })
             .catch(error => {
@@ -209,126 +211,9 @@
         }
       });
     }
+
     document.getElementById('start-training-button').addEventListener('click', startTraining);
 
-
-    // // Initialize file upload status
-    // let isFileUploaded = false;
-
-    // // File upload handler
-    // document.getElementById('file').addEventListener('change', function (event) {
-    //   const file = event.target.files[0];
-    //   const filename = file ? file.name : '';
-    //   const fileExtension = filename.split('.').pop().toLowerCase();
-
-    //   if (fileExtension === 'csv') {
-    //     document.getElementById('dropImage').src = 'public/img/csv.png';
-    //     document.getElementById('file-name').innerText = filename;
-
-    //     document.getElementById('submit-form').innerText = 'Confirm';
-    //     document.getElementById('submit-form').classList.remove('confirmed');
-    //     document.getElementById('submit-form').disabled = false;
-    //   } else {
-    //     alert('Please select a CSV file.');
-    //     event.target.value = ''; // Clear the input field
-    //   }
-    // });
-
-    // document.getElementById('uploadForm').addEventListener('submit', async function (event) {
-    //   event.preventDefault();
-
-    //   const formData = new FormData();
-    //   const fileField = document.querySelector('input[type="file"]');
-    //   formData.append('file', fileField.files[0]);
-
-    //   // Show Swal loading spinner
-    //   Swal.fire({
-    //     title: 'Uploading...',
-    //     text: 'Please wait while the file is being uploaded.',
-    //     allowOutsideClick: false,
-    //     didOpen: () => {
-    //       Swal.showLoading();
-    //     }
-    //   });
-
-    //   try {
-    //     const response = await fetch('/upload', {
-    //       method: 'POST',
-    //       body: formData
-    //     });
-
-    //     if (response.ok) {
-    //       isFileUploaded = true;
-    //       document.getElementById('submit-form').innerText = 'Confirmed';
-    //       document.getElementById('submit-form').classList.add('confirmed');
-    //       document.getElementById('submit-form').disabled = true;
-    //       Swal.close();
-
-    //       Swal.fire({
-    //         title: 'Success',
-    //         text: 'File uploaded successfully.',
-    //         icon: 'success'
-    //       });
-    //     } else {
-    //       throw new Error('File upload failed');
-    //     }
-    //   } catch (error) {
-    //     console.error('Error:', error);
-    //     Swal.close();
-    //     Swal.fire({
-    //       title: 'Error',
-    //       text: 'Error uploading file',
-    //       icon: 'error'
-    //     });
-    //   } finally {
-    //     // Reset image and header text after upload
-    //     document.getElementById('dropImage').src = 'public/img/csv.png';
-    //     document.getElementById('file-name').innerText = filename;
-    //   }
-    // });
-
-    // // Training initiation
-    // function startTraining() {
-    //   if (!isFileUploaded) {
-    //     Swal.fire({
-    //       title: 'Error',
-    //       text: 'Please upload a file before starting the training.',
-    //       icon: 'error'
-    //     });
-    //     return;
-    //   }
-
-    //   Swal.fire({
-    //     title: 'Training in progress',
-    //     text: 'Please wait while the training is being completed.',
-    //     allowOutsideClick: false,
-    //     didOpen: () => {
-    //       Swal.showLoading();
-    //       fetch('/start_training', { method: 'POST' })
-    //         .then(response => response.json())
-    //         .then(data => {
-    //           Swal.close();
-    //           Swal.fire({
-    //             title: 'Success',
-    //             text: 'Training started successfully.',
-    //             icon: 'success'
-    //           });
-    //         })
-    //         .catch(error => {
-    //           Swal.close();
-    //           Swal.fire({
-    //             title: 'Error',
-    //             text: 'There was an error starting the training. Please try again.',
-    //             icon: 'error'
-    //           });
-    //           console.error('Error:', error);
-    //         });
-    //     }
-    //   });
-    // }
-
-    // // Example button to start training (ensure this button is linked to startTraining function)
-    // document.getElementById('start-training-button').addEventListener('click', startTraining);
 
 
   </script>
@@ -478,7 +363,7 @@
     <!-- ======= Services Section ======= -->
     <style>
       .table_container {
-        max-width: 800px;
+        max-width: 850px;
         margin: 0 auto;
         padding: 20px;
         background-color: white;
@@ -540,36 +425,6 @@
     </section>
 
     <script>
-
-      // document.addEventListener('DOMContentLoaded', function () {
-      //   (async function () {
-      //     const tableBody = document.getElementById('download_csv');
-
-      //     // Fetch data to check if the collection has data
-      //     async function checkFinishesData() {
-      //       try {
-      //         const response = await fetch('/checkFinishes'); // API endpoint to check data
-      //         const result = await response.json();
-      //         return result.hasData;
-      //       } catch (error) {
-      //         console.error('Error checking finishes data:', error);
-      //         return false;
-      //       }
-      //     }
-
-      //     if (await checkFinishesData()) {
-      //       const now = new Date();
-      //       const row = document.createElement('tr');
-      //       row.innerHTML = `
-      //       <td>${now.toISOString().split('T')[0]}</td>
-      //       <td>finishes.csv</td>
-      //       <td><a href="/downloadcsv" id="btn-download">Download</a></td>
-      //     `;
-      //       tableBody.appendChild(row);
-      //     }
-      //   })();
-      // });
-
 
       document.addEventListener('DOMContentLoaded', function () {
         (async function () {
