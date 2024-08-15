@@ -1,0 +1,4 @@
+Country,Timestamp,Action,Source IP,Source Port,Destination IP,Destination Port,Protocol,Bytes Sent,Bytes Received,Threat Information,label,anomaly_score,is_anomalous_isolation_forest,y_pred_custom_threshold,status
+United States,Tue Mar 12 2024 17:53:35 GMT+0700 (เวลาอินโดจีน),allow,10.1.19.74,58046,74.125.68.157,443,udp,11132,4523,"tunnel-other-application,,quic,no,no",1,0.07833670106465218,0,0,Risk
+Sweden,Tue Mar 12 2024 17:53:59 GMT+0700 (เวลาอินโดจีน),reset-both,172.25.32.226,6881,185.157.221.247,25401,udp,161,161,"""evasive-behavior,consume-big-bandwidth,used-by-malware,able-to-transfer-file,has-known-vulnerability",0,-0.005255896297129303,1,1,Dangerous
+Thailand,Tue Mar 12 2024 17:53:43 GMT+0700 (เวลาอินโดจีน),deny,89.248.163.168,57448,202.28.46.132,50624,tcp,62,62,",,not-applicable,no,no",1,0.022406715793025,0,1,High Risk

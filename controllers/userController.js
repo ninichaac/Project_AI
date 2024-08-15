@@ -7,7 +7,8 @@ const loadAuth = (req, res) => {
       res.redirect('/failure');
     } else {
       console.log(req.user);
-      res.redirect('/home'); // Redirect to /home which will serve pro.html
+      const googleId = encodeURIComponent(req.user.googleId);
+      res.redirect(`/home?${googleId}`);
     }
   };
   

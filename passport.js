@@ -3,11 +3,16 @@ const GoogleStrategy = require('passport-google-oauth2').Strategy;
 const User = require('./models/User'); // แก้ไข path ให้ถูกต้อง
 
 passport.serializeUser((user, done) => {
-  done(null, user);
+  done(null, user.googleId);
 });
 
-passport.deserializeUser((user, done) => {
-  done(null, user);
+passport.deserializeUser(async (id, done) => {
+  try {
+    const user = await User.findOne({ googleId: id });
+    done(null, user);
+  } catch (err) {
+    done(err, null);
+  }
 });
 
 passport.use(new GoogleStrategy({

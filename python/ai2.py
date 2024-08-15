@@ -10,16 +10,39 @@ import matplotlib.pyplot as plt
 import logging
 from pymongo import MongoClient
 from datetime import datetime
+import sys
+import os
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+# Check if the Google ID argument is provided
+if len(sys.argv) < 2:
+    logging.error("Google ID argument is missing.")
+    sys.exit(1)
+
+# Get Google ID from command line argument
+google_id = sys.argv[1]
+logging.info(f"Received Google ID: {google_id}")
+
+
+# กำหนดไดเรกทอรี
+update_dir = 'update'
+
+# กำหนดเส้นทางไปยังไฟล์ CSV
+processed_csv_path = os.path.join(update_dir, google_id, 'processed_data.csv')
+
+# ตรวจสอบว่าไฟล์มีอยู่หรือไม่
+if not os.path.exists(processed_csv_path):
+    logging.error(f"File {processed_csv_path} does not exist.")
+    sys.exit(1)
 
 # Load CSV files and handle dtype
 logging.info("Loading CSV files...")
 client = MongoClient('mongodb+srv://project:project1234@cluster0.h4ufncx.mongodb.net/project?authSource=admin')
 db = client['project']
 finish_collection = db['finishes']
-output_file = pd.read_csv('update/processed_data.csv', dtype={'Source Port': str, 'Bytes Sent': str, 'Bytes Received': str})
+output_file = pd.read_csv(processed_csv_path, dtype={'Source Port': str, 'Bytes Sent': str, 'Bytes Received': str})
 dangerous_ip_file = pd.read_csv('python/Dangerous_IP.csv')
 
 # Convert Timestamp to datetime object
@@ -182,8 +205,8 @@ filtered_output_dangerous_ips['status'] = filtered_output_dangerous_ips.apply(de
 # Add 'uploadedAt' field with current timestamp
 filtered_output_dangerous_ips['uploadedAt'] = datetime.now()
 
-# Save the filtered data to a new CSV file
-# filtered_output_dangerous_ips.to_csv('D:/filtered_output_dangerous_ai_with_status.csv', index=False)
+# Add Google ID to each record
+filtered_output_dangerous_ips['googleId'] = google_id
 
 # Convert DataFrame to dictionary for MongoDB insertion
 filtered_output_dangerous_ips_dict = filtered_output_dangerous_ips.to_dict('records')

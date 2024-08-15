@@ -40,7 +40,7 @@
           <li><a class="nav-link scrollto active" href="#hero">Home</a></li>
           <li><a class="nav-link scrollto" href="#about">Analysis</a></li>
           <li><a class="nav-link scrollto" href="#services">History</a></li>
-          <li><a href="#" onclick="logout()"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+          <li><a href="#" onclick="handleLogout()"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
                 fill="currentColor" class="bi bi-box-arrow-right" viewBox="0 0 16 16">
                 <path fill-rule="evenodd"
                   d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0z" />
@@ -56,7 +56,7 @@
   <!-- End Header -->
 
   <script>
-    function logout() {
+    function handleLogout() {
       window.location.href = '/login';
     }
   </script>
@@ -75,11 +75,11 @@
           <h4 id="file-name" class="fw-bold">Drop file here</h4>
           <form id="uploadForm" enctype="multipart/form-data">
             <input type="file" name="file" id="file" accept=".csv" required />
-            <button type="submit" id="submit-form">Confirm</button>
+            <button type="submit" id="submit-form">Upload</button>
           </form>
         </div>
       </div>
-      <button class="btn btn-primary" id="start-training-button">Click to training</button>
+      <button class="btn btn-primary" id="start-training-button">Click to processing</button>
     </div>
 
   </section>
@@ -98,7 +98,7 @@
         document.getElementById('dropImage').src = 'public/img/csv.png';
         document.getElementById('file-name').innerText = filename;
 
-        document.getElementById('submit-form').innerText = 'Confirm';
+        document.getElementById('submit-form').innerText = 'Upload';
         document.getElementById('submit-form').classList.remove('confirmed');
         document.getElementById('submit-form').disabled = false;
       } else {
@@ -132,7 +132,7 @@
 
         if (response.ok) {
           isFileUploaded = true;
-          document.getElementById('submit-form').innerText = 'Confirmed';
+          document.getElementById('submit-form').innerText = 'Uploaded';
           document.getElementById('submit-form').classList.add('confirmed');
           document.getElementById('submit-form').disabled = true;
           Swal.close();
@@ -144,7 +144,7 @@
           }).then(() => {
             Swal.fire({
               title: 'Preparing files...',
-              text: 'Please wait while we prepare the file for training.',
+              text: 'Please wait while we prepare the file for processing.',
               allowOutsideClick: false,
               timer: 20000,
               didOpen: () => {
@@ -175,15 +175,15 @@
       if (!isFileUploaded) {
         Swal.fire({
           title: 'Error',
-          text: 'Please upload a file before starting the training.',
+          text: 'Please upload a file before starting processing.',
           icon: 'error'
         });
         return;
       }
 
       Swal.fire({
-        title: 'Training in progress',
-        text: 'Please wait while the training is being completed.',
+        title: 'Processing in progress',
+        text: 'Please wait while the processing is being completed.',
         allowOutsideClick: false,
         didOpen: () => {
           Swal.showLoading();
@@ -193,17 +193,17 @@
               Swal.close();
               Swal.fire({
                 title: 'Success',
-                text: 'Training started successfully.',
+                text: 'Processing started successfully.',
                 icon: 'success'
               }).then(() => {
-                window.location.reload(); // Reload the page after successful training
+                window.location.reload;
               });
             })
             .catch(error => {
               Swal.close();
               Swal.fire({
                 title: 'Error',
-                text: 'There was an error starting the training. Please try again.',
+                text: 'There was an error starting the processing. Please try again.',
                 icon: 'error'
               });
               console.error('Error:', error);
@@ -213,8 +213,6 @@
     }
 
     document.getElementById('start-training-button').addEventListener('click', startTraining);
-
-
 
   </script>
   <!-- End Hero -->
@@ -272,11 +270,16 @@
 
       .table th:nth-child(5),
       .table td:nth-child(5) {
-        width: 35%;
+        width: 10%;
       }
 
       .table th:nth-child(6),
       .table td:nth-child(6) {
+        width: 25%;
+      }
+
+      .table th:nth-child(7),
+      .table td:nth-child(7) {
         width: 10%;
       }
     </style>
@@ -293,6 +296,7 @@
                 <th>Country</th>
                 <th>Source IP</th>
                 <th>Destination IP</th>
+                <th>Destination Port</th>
                 <th>Threat Information</th>
                 <th>Status</th>
               </tr>
@@ -333,6 +337,7 @@
             const countryCell = document.createElement('td');
             const sourceIPCell = document.createElement('td');
             const destinationIPCell = document.createElement('td');
+            const destinationPortCell = document.createElement('td');
             const threatInfoCell = document.createElement('td');
             const statusCell = document.createElement('td');
 
@@ -340,6 +345,7 @@
             countryCell.textContent = item.Country;
             sourceIPCell.textContent = item["Source IP"];
             destinationIPCell.textContent = item["Destination IP"];
+            destinationPortCell.textContent = item["Destination Port"];
             threatInfoCell.textContent = item["Threat Information"];
             statusCell.textContent = item.status;
 
@@ -348,6 +354,7 @@
             row.appendChild(countryCell);
             row.appendChild(sourceIPCell);
             row.appendChild(destinationIPCell);
+            row.appendChild(destinationPortCell);
             row.appendChild(threatInfoCell);
             row.appendChild(statusCell);
 
@@ -358,6 +365,7 @@
 
         populateTable();
       });
+
     </script><!-- End About Section -->
 
     <!-- ======= Services Section ======= -->
@@ -401,6 +409,21 @@
         background-color: #45a049;
         color: black;
       }
+
+      #download_csv th:nth-child(1),
+      #download_csv td:nth-child(1) {
+        width: 20%;
+      }
+
+      #download_csv th:nth-child(2),
+      #download_csv td:nth-child(2) {
+        width: 60%;
+      }
+
+      #download_csv th:nth-child(3),
+      #download_csv td:nth-child(3) {
+        width: 20%;
+      }
     </style>
     <section id="services" class="services section-bg">
       <div class="container">
@@ -413,7 +436,7 @@
               <tr>
                 <th>Date</th>
                 <th>File name</th>
-                <th>Download</th>
+                <th class="text-center">Download</th>
               </tr>
             </thead>
             <tbody>
@@ -441,19 +464,21 @@
           }
 
           const csvFiles = await fetchCsvFiles();
+
+          // Sort files by uploadTimestamp in descending order
+          csvFiles.sort((a, b) => new Date(b.uploadTimestamp) - new Date(a.uploadTimestamp));
+
           csvFiles.forEach(file => {
             const row = document.createElement('tr');
             row.innerHTML = `
-            <td>${new Date(file.uploadTimestamp).toLocaleString()}</td>
-            <td>${file.filename}</td>
-            <td><a href="/downloadcsv?filename=${file.filename}" id="btn-download">Download</a></td>
-          `;
+        <td>${new Date(file.uploadTimestamp).toLocaleString()}</td>
+        <td>${file.filename}</td>
+        <td class="text-center"><a href="/downloadcsv?filename=${file.filename}" id="btn-download">Download</a></td>
+      `;
             tableBody.appendChild(row);
           });
         })();
       });
-
-
     </script>
     <!-- End Services Section -->
 
