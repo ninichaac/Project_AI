@@ -15,7 +15,7 @@ const userSchema = new mongoose.Schema({
     required: true,
     unique: true
   }
-}, { versionKey: false }); // ปิดการใช้งานฟิลด์ __v
+}, { versionKey: false });
 
 const User = mongoose.model('User', userSchema);
 

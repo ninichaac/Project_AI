@@ -1,5 +1,252 @@
+// ======= Header =======
+function handleLogout() {
+  fetch('/logout', {
+    method: 'POST',
+    credentials: 'include'  // Include cookies for authentication
+  })
+    .then(response => {
+      if (response.ok) {
+        window.location.href = '/login';  // Redirect to login page or home page
+      } else {
+        console.error('Logout failed');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+    });
+}
+// ======= End Header =======
 
-(function() {
+
+// ======= Home Section =======
+// Initialize file upload status
+let isFileUploaded = false;
+
+// File upload handler
+document.getElementById('file').addEventListener('change', function (event) {
+  const file = event.target.files[0];
+  const filename = file ? file.name : '';
+  const fileExtension = filename.split('.').pop().toLowerCase();
+
+  if (fileExtension === 'csv') {
+    document.getElementById('dropImage').src = 'public/img/csv.png';
+    document.getElementById('file-name').innerText = filename;
+
+    document.getElementById('submit-form').innerText = 'Upload';
+    document.getElementById('submit-form').classList.remove('confirmed');
+    document.getElementById('submit-form').disabled = false;
+  } else {
+    alert('Please select a CSV file.');
+    event.target.value = ''; // Clear the input field
+  }
+});
+
+document.getElementById('uploadForm').addEventListener('submit', async function (event) {
+  event.preventDefault();
+
+  const formData = new FormData();
+  const fileField = document.querySelector('input[type="file"]');
+  formData.append('file', fileField.files[0]);
+
+  // Show Swal loading spinner
+  Swal.fire({
+    title: 'Uploading...',
+    text: 'Please wait while the file is being uploaded.',
+    allowOutsideClick: false,
+    didOpen: () => {
+      Swal.showLoading();
+    }
+  });
+
+  try {
+    const response = await fetch('/upload', {
+      method: 'POST',
+      body: formData
+    });
+
+    if (response.ok) {
+      isFileUploaded = true;
+      document.getElementById('submit-form').innerText = 'Uploaded';
+      document.getElementById('submit-form').classList.add('confirmed');
+      document.getElementById('submit-form').disabled = true;
+      Swal.close();
+
+      Swal.fire({
+        title: 'Success',
+        text: 'File uploaded successfully.',
+        icon: 'success'
+      }).then(() => {
+        Swal.fire({
+          title: 'Preparing files...',
+          text: 'Please wait while we prepare the file for processing.',
+          allowOutsideClick: false,
+          timer: 20000,
+          didOpen: () => {
+            Swal.showLoading();
+          }
+        });
+      });
+    } else {
+      throw new Error('File upload failed');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    Swal.close();
+    Swal.fire({
+      title: 'Error',
+      text: 'Error uploading file',
+      icon: 'error'
+    });
+  } finally {
+    // Reset image and header text after upload
+    document.getElementById('dropImage').src = 'public/img/csv.png';
+    document.getElementById('file-name').innerText = filename;
+  }
+});
+
+// Training initiation
+function startTraining() {
+  if (!isFileUploaded) {
+    Swal.fire({
+      title: 'Error',
+      text: 'Please upload a file before starting processing.',
+      icon: 'error'
+    });
+    return;
+  }
+
+  Swal.fire({
+    title: 'Processing in progress',
+    text: 'Please wait when processing is complete..',
+    allowOutsideClick: false,
+    didOpen: () => {
+      Swal.showLoading();
+      fetch('/start_training', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+          Swal.close();
+          Swal.fire({
+            title: 'Success',
+            text: 'Processing started successfully.',
+            icon: 'success'
+          }).then(() => {
+            window.location.reload();
+          });
+        })
+        .catch(error => {
+          Swal.close();
+          Swal.fire({
+            title: 'Error',
+            text: 'There was an error starting the processing. Please try again.',
+            icon: 'error'
+          });
+          console.error('Error:', error);
+        });
+    }
+  });
+}
+
+document.getElementById('start-training-button').addEventListener('click', startTraining);
+// ======= End Home Section =======
+
+
+
+// ======= Analysis Section =======
+document.addEventListener('DOMContentLoaded', function () {
+  const tableBody = document.getElementById('table-body');
+
+  // Fetch data from MongoDB (simulated here)
+  async function fetchData() {
+    try {
+      // Replace with actual fetch or AJAX call to your MongoDB data
+      const response = await fetch('/data');
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      return [];
+    }
+  }
+
+  async function populateTable() {
+    const data = await fetchData();
+
+    data.forEach((item, index) => {
+      const row = document.createElement('tr');
+
+      // Create cells for each data field
+      const noCell = document.createElement('td');
+      const countryCell = document.createElement('td');
+      const sourceIPCell = document.createElement('td');
+      const destinationIPCell = document.createElement('td');
+      const destinationPortCell = document.createElement('td');
+      const threatInfoCell = document.createElement('td');
+      const statusCell = document.createElement('td');
+
+      noCell.textContent = index + 1;
+      countryCell.textContent = item.Country;
+      sourceIPCell.textContent = item["Source IP"];
+      destinationIPCell.textContent = item["Destination IP"];
+      destinationPortCell.textContent = item["Destination Port"];
+      threatInfoCell.textContent = item["Threat Information"];
+      statusCell.textContent = item.status;
+
+      // Append cells to the row
+      row.appendChild(noCell);
+      row.appendChild(countryCell);
+      row.appendChild(sourceIPCell);
+      row.appendChild(destinationIPCell);
+      row.appendChild(destinationPortCell);
+      row.appendChild(threatInfoCell);
+      row.appendChild(statusCell);
+
+      // Append row to the table body
+      tableBody.appendChild(row);
+    });
+  }
+
+  populateTable();
+});
+// ======= End Analysis Section =======
+
+
+
+// ======= History Section =======
+document.addEventListener('DOMContentLoaded', function () {
+  (async function () {
+    const tableBody = document.getElementById('download_csv').querySelector('tbody');
+
+    async function fetchCsvFiles() {
+      try {
+        const response = await fetch('/listCsvFiles');
+        return await response.json();
+      } catch (error) {
+        console.error('Error fetching CSV files:', error);
+        return [];
+      }
+    }
+
+    const csvFiles = await fetchCsvFiles();
+
+    // Sort files by uploadTimestamp in descending order
+    csvFiles.sort((a, b) => new Date(b.uploadTimestamp) - new Date(a.uploadTimestamp));
+
+    csvFiles.forEach(file => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+  <td>${new Date(file.uploadTimestamp).toLocaleString()}</td>
+  <td>${file.filename}</td>
+  <td class="text-center"><a href="/downloadcsv?filename=${file.filename}" id="btn-download">Download</a></td>
+`;
+      tableBody.appendChild(row);
+    });
+  })();
+});
+// ======= End History Section =======
+
+
+
+(function () {
   "use strict";
 
   /**
@@ -92,7 +339,7 @@
   /**
    * Mobile nav toggle
    */
-  on('click', '.mobile-nav-toggle', function(e) {
+  on('click', '.mobile-nav-toggle', function (e) {
     select('#navbar').classList.toggle('navbar-mobile')
     this.classList.toggle('bi-list')
     this.classList.toggle('bi-x')
@@ -101,7 +348,7 @@
   /**
    * Mobile nav dropdowns activate
    */
-  on('click', '.navbar .dropdown > a', function(e) {
+  on('click', '.navbar .dropdown > a', function (e) {
     if (select('#navbar').classList.contains('navbar-mobile')) {
       e.preventDefault()
       this.nextElementSibling.classList.toggle('dropdown-active')
@@ -111,7 +358,7 @@
   /**
    * Scrool with ofset on links with a class name .scrollto
    */
-  on('click', '.scrollto', function(e) {
+  on('click', '.scrollto', function (e) {
     if (select(this.hash)) {
       e.preventDefault()
 
@@ -188,9 +435,9 @@
 
       let portfolioFilters = select('#portfolio-flters li', true);
 
-      on('click', '#portfolio-flters li', function(e) {
+      on('click', '#portfolio-flters li', function (e) {
         e.preventDefault();
-        portfolioFilters.forEach(function(el) {
+        portfolioFilters.forEach(function (el) {
           el.classList.remove('filter-active');
         });
         this.classList.add('filter-active');
@@ -198,7 +445,7 @@
         portfolioIsotope.arrange({
           filter: this.getAttribute('data-filter')
         });
-        portfolioIsotope.on('arrangeComplete', function() {
+        portfolioIsotope.on('arrangeComplete', function () {
           AOS.refresh()
         });
       }, true);

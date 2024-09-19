@@ -1,5 +1,5 @@
 const express = require('express');
-const router = express.Router(); // เปลี่ยนจาก router() เป็น express.Router()
+const router = express.Router();
 const passport = require('passport'); 
 
 router.use(passport.initialize()); 

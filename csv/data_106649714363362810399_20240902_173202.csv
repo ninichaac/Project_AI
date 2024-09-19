@@ -1,6 +1,0 @@
-Country,Timestamp,Action,Source IP,Source Port,Destination IP,Destination Port,Protocol,Bytes Sent,Bytes Received,Threat Information,label,anomaly_score,is_anomalous_isolation_forest,y_pred_custom_threshold,status
-Thailand,2024-03-12T17:53:59.000+07:00,allow,172.25.113.132,64366,163.70.149.15,443,udp,11586,5468,"tunnel-other-application,,quic,no,no",0,0.12656265478998624,0,1,Risk
-Hong Kong,2024-03-12T17:53:59.000+07:00,allow,172.25.216.178,56904,17.253.84.123,123,udp,188,94,"""used-by-malware,pervasive-use"",ntp,ntp-base,no",0,0.08042990594719635,0,1,Risk
-United States,2024-03-12T17:53:59.000+07:00,allow,172.25.156.165,54674,74.125.130.113,443,tcp,10505,2713,"""used-by-malware,able-to-transfer-file,has-known-vulnerability,tunnel-other-application,pervasive-use""",0,0.18164900452686472,0,1,Risk
-Thailand,2024-03-12T17:53:59.000+07:00,allow,43.175.47.209,0,202.28.46.234,0,icmp,408,204,"""has-known-vulnerability,tunnel-other-application,pervasive-use"",,untunneled",0,0.07162961465428108,0,1,Risk
-Thailand,2024-03-12T17:53:59.000+07:00,drop,167.94.138.104,24676,202.28.44.27,62569,tcp,62,62,",,not-applicable,no,no",1,0.07633413037142922,0,1,High Risk

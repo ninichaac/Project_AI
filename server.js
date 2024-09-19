@@ -1,4 +1,4 @@
-require('dotenv').config(); // เพื่อใช้ environment variables จากไฟล์ .env
+require('dotenv').config();
 
 const express = require('express');
 const app = express();
@@ -9,7 +9,7 @@ const bodyParser = require('body-parser');
 const { OAuth2Client } = require('google-auth-library');
 const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://project:project1234@cluster0.h4ufncx.mongodb.net/project?authSource=admin";
-const CLIENT_ID = process.env.CLIENT_ID; // ใช้ environment variable ที่เก็บ Google Client ID
+const CLIENT_ID = process.env.CLIENT_ID;
 const client = new OAuth2Client(CLIENT_ID);
 const CLIENT_SECRET = process.env.CLIENT_SECRET;
 const SESSION_SECRET = process.env.SESSION_SECRET;
@@ -17,9 +17,7 @@ const passport = require('passport');
 require('./passport');
 const GoogleStrategy = require('passport-google-oauth2').Strategy;
 const multer = require('multer');
-const csvParser = require('csv-parser');
 const fs = require('fs');
-const memorystore = require('memorystore')(session);
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const { exec } = require('child_process');
 const moment = require('moment');
@@ -74,77 +72,24 @@ app.get('/login', (req, res) => {
 });
 
 app.get('/home', ensureAuthenticated, (req, res) => {
-  res.sendFile(path.join(__dirname, 'views/pro.html'));
+  res.sendFile(path.join(__dirname, 'views/Home.html'));
+});
+
+app.post('/logout', (req, res) => {
+  req.session.destroy(err => {
+      if (err) {
+          return res.status(500).send('Logout failed');
+      }
+      res.clearCookie('connect.sid');  // Clear the session cookie
+      res.sendStatus(200);  // Send a successful response
+  });
 });
 
 
 
 
 
-
 // ================== upload file and taining ai  ===============
-// // Multer setup
-// const storage = multer.diskStorage({
-//   destination: (req, file, cb) => {
-//     cb(null, 'uploads/');
-//   },
-//   filename: (req, file, cb) => {
-//     //Use the original file name and add the time it was uploaded to prevent duplicate file names.
-//     const googleId = req.user.googleId;
-//     const originalName = path.basename(file.originalname, path.extname(file.originalname));
-//     const extension = path.extname(file.originalname);
-//     const timestamp = Date.now();
-//     cb(null, originalName + '-' + googleId + extension);
-//   }
-// });
-
-// const upload = multer({ storage: storage });
-
-// // upload file
-// app.post('/upload', upload.single('file'), (req, res) => {
-//   if (!req.file) {
-//     return res.status(400).send('No file uploaded.');
-//   }
-
-//   console.log('File uploaded successfully:', req.file.path);
-//   res.status(200).send('File uploaded successfully.');
-// });
-
-// Multer setup
-// const storage = multer.diskStorage({
-//   destination: (req, file, cb) => {
-//     const googleId = req.user.googleId;
-//     const userDir = path.join('uploads', googleId);
-
-//     // Check if the directory exists, if not, create it
-//     if (!fs.existsSync(userDir)) {
-//       fs.mkdirSync(userDir, { recursive: true });
-//     }
-
-//     cb(null, userDir);
-//   },
-//   filename: (req, file, cb) => {
-//     // Use the original file name and add the time it was uploaded to prevent duplicate file names.
-//     const originalName = path.basename(file.originalname, path.extname(file.originalname));
-//     const extension = path.extname(file.originalname);
-//     const timestamp = Date.now();
-//     cb(null, `${originalName}-${timestamp}${extension}`);
-//   }
-// });
-
-// const upload = multer({ storage: storage });
-
-// // File upload route
-// app.post('/upload', upload.single('file'), (req, res) => {
-//   if (!req.file) {
-//     return res.status(400).send('No file uploaded.');
-//   }
-
-//   console.log('File uploaded successfully:', req.file.path);
-//   res.status(200).send('File uploaded successfully.');
-// });
-
-
 // Multer setup
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -198,7 +143,7 @@ app.post('/start_training', (req, res) => {
   }
 
   // Run the Python script and pass the Google ID value
-  exec(`python python/ai2.py ${req.user.googleId}`, (error, stdout, stderr) => {
+  exec(`python python/ai_training.py ${req.user.googleId}`, (error, stdout, stderr) => {
     if (error) {
       console.error(`Error executing script: ${error.message}`);
       return res.status(500).json({ status: 'error', message: 'Failed to start processing.' });
@@ -213,7 +158,6 @@ app.post('/start_training', (req, res) => {
 });
 
 // ================== upload file and taining ai  ===============
-
 
 
 // ================== Function to delete files older than 24 hours ================== 
@@ -347,6 +291,7 @@ app.get('/data', async (req, res) => {
 
 
 
+
 // ================== get csv download result  ===============
 const csvfileSchema = new mongoose.Schema({
   googleId: String,
@@ -458,88 +403,6 @@ const createCsvForNewData = async (timestamp, googleId) => {
   }
 };
 
-
-// async function createCsvForNewData(timestamp, googleId) {
-//   if (csvCreationInProgress) {
-//     console.log('กำลังสร้างไฟล์ CSV อยู่ ข้ามการสร้าง...');
-//     return; // If a CSV is already being created, exit the function.
-//   }
-
-//   // Set the log to indicate that CSV generation has started.
-//   csvCreationInProgress = true;
-
-//   try {
-//     // Search for new data from MongoDB
-//     const data = await Finish.find({
-//       uploadedAt: {
-//         $gte: timestamp
-//       },
-//       googleId  // Filter by googleId
-//     }, {
-//       "Country": 1,
-//       "Timestamp": 1,
-//       "Action": 1,
-//       "Source IP": 1,
-//       "Source Port": 1,
-//       "Destination IP": 1,
-//       "Destination Port": 1,
-//       "Protocol": 1,
-//       "Bytes Sent": 1,
-//       "Bytes Received": 1,
-//       "Threat Information": 1,
-//       "label": 1,
-//       "anomaly_score": 1,
-//       "is_anomalous_isolation_forest": 1,
-//       "y_pred_custom_threshold": 1,
-//       "status": 1,
-//       _id: 0
-//     });
-
-//     if (data.length > 0) {
-//       const timestampStr = moment().format('YYYYMMDD_HHmmss');
-//       const csvFilename = `data_${googleId}_${timestampStr}.csv`;  // Put googleId in file name
-
-//       // Format the Timestamp data in each data list
-//       const formattedData = data.map(item => ({
-//         ...item._doc,
-//         Timestamp: moment(item.Timestamp).format('YYYY-MM-DDTHH:mm:ss.SSSZ') // Format Timestamp
-//       }));
-
-//       const csvWriter = createCsvWriter({
-//         path: path.join(csvDir, csvFilename),
-//         header: [
-//           { id: 'Country', title: 'Country' },
-//           { id: 'Timestamp', title: 'Timestamp' },
-//           { id: 'Action', title: 'Action' },
-//           { id: 'Source IP', title: 'Source IP' },
-//           { id: 'Source Port', title: 'Source Port' },
-//           { id: 'Destination IP', title: 'Destination IP' },
-//           { id: 'Destination Port', title: 'Destination Port' },
-//           { id: 'Protocol', title: 'Protocol' },
-//           { id: 'Bytes Sent', title: 'Bytes Sent' },
-//           { id: 'Bytes Received', title: 'Bytes Received' },
-//           { id: 'Threat Information', title: 'Threat Information' },
-//           { id: 'label', title: 'label' },
-//           { id: 'anomaly_score', title: 'anomaly_score' },
-//           { id: 'is_anomalous_isolation_forest', title: 'is_anomalous_isolation_forest' },
-//           { id: 'y_pred_custom_threshold', title: 'y_pred_custom_threshold' },
-//           { id: 'status', title: 'status' }
-//         ]
-//       });
-
-//       await csvWriter.writeRecords(formattedData);
-
-//       // Update the last timestamp generated CSV file.
-//       fs.writeFileSync(lastCsvTimestampFile, timestamp.toISOString());
-//     }
-//   } catch (err) {
-//     console.error('เกิดข้อผิดพลาดในการประมวลผลข้อมูลใหม่:', err);
-//   } finally {
-//     // Unlock after CSV generation is complete.
-//     csvCreationInProgress = false;
-//   }
-// }
-
 // Use Change Streams to check for new data in MongoDB.
 async function monitorDatabaseChanges() {
   const changeStream = Finish.watch();
@@ -571,31 +434,6 @@ async function monitorDatabaseChanges() {
 
 // Start tracking changes in MongoDB
 monitorDatabaseChanges();
-
-
-// async function monitorDatabaseChanges() {
-//   const changeStream = Finish.watch();
-
-//   changeStream.on('change', async (change) => {
-//     if (change.operationType === 'insert') {
-//       let lastCsvTimestamp = new Date(0); // Default time is 1970-01-01
-
-//       if (fs.existsSync(lastCsvTimestampFile)) {
-//         lastCsvTimestamp = new Date(fs.readFileSync(lastCsvTimestampFile, 'utf-8'));
-//       }
-
-//       const googleId = change.fullDocument.googleId; // Get googleId from the change document
-
-//       // Create a new CSV file if there is new data after the last timestamp.
-//       if (change.fullDocument.uploadedAt > lastCsvTimestamp) {
-//         await createCsvForNewData(change.fullDocument.uploadedAt, googleId);
-//       }
-//     }
-//   });
-// }
-// // Start tracking changes in MongoDB.
-// monitorDatabaseChanges();
-
 
 // Function for listing CSV files
 app.get('/listCsvFiles', (req, res) => {

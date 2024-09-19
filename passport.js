@@ -1,6 +1,6 @@
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth2').Strategy;
-const User = require('./models/User'); // แก้ไข path ให้ถูกต้อง
+const User = require('./models/User');
 
 passport.serializeUser((user, done) => {
   done(null, user.googleId);
@@ -24,11 +24,11 @@ passport.use(new GoogleStrategy({
   try {
     const { sub, name, email } = profile._json;
 
-    // ตรวจสอบว่าผู้ใช้มีอยู่แล้วในฐานข้อมูลหรือไม่
+    // Check if the user already exists in the database.
     let user = await User.findOne({ googleId: sub });
 
     if (!user) {
-      // ถ้าผู้ใช้ไม่พบในฐานข้อมูล ให้เพิ่มใหม่
+      // If the user is not found in the database, add a new one.
       user = new User({
         googleId: sub,
         name: name,
