@@ -119,28 +119,28 @@ logging.info(f"ROC-AUC Score: {roc_auc}")
 fpr, tpr, thresholds = roc_curve(y_test, y_pred_proba)
 
 # Plot ROC curve
-# plt.figure()
-# plt.plot(fpr, tpr, label=f'ROC curve (area = {roc_auc:.2f})')
-# plt.plot([0, 1], [0, 1], 'k--')
-# plt.xlim([0.0, 1.0])
-# plt.ylim([0.0, 1.05])
-# plt.xlabel('False Positive Rate')
-# plt.ylabel('True Positive Rate')
-# plt.title('Receiver Operating Characteristic')
-# plt.legend(loc="lower right")
-# plt.show()
+plt.figure()
+plt.plot(fpr, tpr, label=f'ROC curve (area = {roc_auc:.2f})')
+plt.plot([0, 1], [0, 1], 'k--')
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.05])
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Receiver Operating Characteristic')
+plt.legend(loc="lower right")
+plt.show()
 
 # Calculate Precision-Recall curve
 precision, recall, thresholds_pr = precision_recall_curve(y_test, y_pred_proba)
 
 # Plot Precision-Recall curve
-# plt.figure()
-# plt.plot(recall, precision, label='Precision-Recall curve')
-# plt.xlabel('Recall')
-# plt.ylabel('Precision')
-# plt.title('Precision-Recall curve')
-# plt.legend(loc="lower left")
-# plt.show()
+plt.figure()
+plt.plot(recall, precision, label='Precision-Recall curve')
+plt.xlabel('Recall')
+plt.ylabel('Precision')
+plt.title('Precision-Recall curve')
+plt.legend(loc="lower left")
+plt.show()
 
 # Adjust threshold to balance precision and recall
 optimal_threshold = thresholds[np.argmax(tpr - fpr)]

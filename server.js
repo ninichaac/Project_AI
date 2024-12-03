@@ -75,15 +75,16 @@ app.get('/home', ensureAuthenticated, (req, res) => {
   res.sendFile(path.join(__dirname, 'views/Home.html'));
 });
 
-app.post('/logout', (req, res) => {
+app.get('/logout', (req, res) => {
   req.session.destroy(err => {
       if (err) {
           return res.status(500).send('Logout failed');
       }
       res.clearCookie('connect.sid');  // Clear the session cookie
-      res.sendStatus(200);  // Send a successful response
+      res.redirect('/login');  // Redirect to the login page
   });
 });
+
 
 
 
@@ -486,7 +487,7 @@ app.get('/downloadcsv', (req, res) => {
 
 // ==============================================================
 const server = app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Server running at ${PORT}`);
 });
 
 server.on('error', (err) => {
